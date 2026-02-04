@@ -21,6 +21,8 @@ pids/
 .env.local
 .env.*.local
 
+config/
+
 # PM2
 .pm2/
 ecosystem.config.*.backup
