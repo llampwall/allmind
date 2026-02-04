@@ -26,68 +26,80 @@ async function refreshReposCache() {
 
   try {
     const repos = [];
-    const rootDirs = await listDirs(config.strapRoot);
 
-    // Filter to actual repos (has .git)
-    for (const dir of rootDirs) {
-      // Skip special directories (except _strap)
-      if ((dir.startsWith('_') && dir !== '_strap') || dir.startsWith('.')) continue;
+    // Read registry as source of truth
+    const registry = await readJson(config.strapRegistry);
+    if (!registry?.repos) {
+      console.warn('No repos found in registry.json');
+      reposCache.data = { repos: [], root: config.strapRoot, count: 0 };
+      reposCache.lastUpdated = new Date().toISOString();
+      return;
+    }
 
-      const repoPath = join(config.strapRoot, dir);
-      const gitDir = join(repoPath, '.git');
+    // Process each registry entry
+    for (const regEntry of registry.repos) {
+      const repoPath = regEntry.repoPath || join(config.strapRoot, regEntry.name);
+      const repoExists = await exists(repoPath);
 
-      if (!await exists(gitDir)) continue;
-
-      const gitStatus = await getGitStatus(repoPath);
-
-      // Check for special files
-      const hasClaudeProject = await exists(join(repoPath, '.claude'));
-      const hasVenv = await exists(join(repoPath, '.venv')) || await exists(join(repoPath, 'venv'));
-      const hasPackageJson = await exists(join(repoPath, 'package.json'));
-      const hasPyproject = await exists(join(repoPath, 'pyproject.toml'));
-      const hasMemory = await exists(join(repoPath, 'docs', 'memory', 'STATE.md'));
-
-      // Check for test scripts
-      let testCommand = null;
-      if (hasPackageJson) {
-        const pkg = await readJson(join(repoPath, 'package.json'));
-        if (pkg?.scripts?.test) testCommand = 'npm test';
-      }
-      if (hasPyproject || await exists(join(repoPath, 'tests'))) {
-        testCommand = testCommand || 'pytest';
-      }
-
-      repos.push({
-        name: dir,
+      // Build repo object from registry entry
+      const repo = {
+        name: regEntry.name,
+        id: regEntry.id,
+        scope: regEntry.scope,
         path: repoPath,
-        git: gitStatus,
-        tools: {
+        exists: repoExists,
+        shimCount: regEntry.shims?.length || 0,
+        createdAt: regEntry.created_at,
+        updatedAt: regEntry.updated_at,
+      };
+
+      // Enrich with git status if repo exists and has .git
+      if (repoExists) {
+        const gitDir = join(repoPath, '.git');
+        if (await exists(gitDir)) {
+          repo.git = await getGitStatus(repoPath);
+        } else {
+          repo.git = { error: 'Not a git repository' };
+        }
+
+        // Check for special files
+        const hasClaudeProject = await exists(join(repoPath, '.claude'));
+        const hasVenv = await exists(join(repoPath, '.venv')) || await exists(join(repoPath, 'venv'));
+        const hasPackageJson = await exists(join(repoPath, 'package.json'));
+        const hasPyproject = await exists(join(repoPath, 'pyproject.toml'));
+        const hasMemory = await exists(join(repoPath, 'docs', 'memory', 'STATE.md'));
+
+        repo.tools = {
           claudeProject: hasClaudeProject,
           venv: hasVenv,
           node: hasPackageJson,
           python: hasPyproject,
           memory: hasMemory,
-        },
-        testCommand,
-      });
-    }
+        };
 
-    // Also check strap registry for additional metadata
-    const registry = await readJson(config.strapRegistry);
-    if (registry?.repos) {
-      for (const repo of repos) {
-        const regEntry = registry.repos.find(r =>
-          r.repoPath?.toLowerCase() === repo.path.toLowerCase() ||
-          r.name?.toLowerCase() === repo.name.toLowerCase()
-        );
-        if (regEntry) {
-          repo.strapEntry = {
-            name: regEntry.name,
-            scope: regEntry.scope,
-            shimCount: regEntry.shims?.length || 0,
-          };
+        // Check for test scripts
+        let testCommand = null;
+        if (hasPackageJson) {
+          const pkg = await readJson(join(repoPath, 'package.json'));
+          if (pkg?.scripts?.test) testCommand = 'npm test';
         }
+        if (hasPyproject || await exists(join(repoPath, 'tests'))) {
+          testCommand = testCommand || 'pytest';
+        }
+        repo.testCommand = testCommand;
+      } else {
+        // Repo doesn't exist on disk yet
+        repo.git = { error: 'Repository path does not exist' };
+        repo.tools = {
+          claudeProject: false,
+          venv: false,
+          node: false,
+          python: false,
+          memory: false,
+        };
       }
+
+      repos.push(repo);
     }
 
     // Update cache
