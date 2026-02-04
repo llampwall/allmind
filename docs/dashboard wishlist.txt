@@ -1,0 +1,61 @@
+dashboard wishlist
+- each of these should be per-repo
+- but also the main page should have this for the full system
+
+heads up section
+	- last thing done 
+	- what's up next
+	- most critical failure/bug/omittance
+	- highest ROI move
+
+monitoring 
+	- running processes
+	- running claude/codex instances
+	- cpu/ram usage
+	- ability to kill specific agents/processes
+	- set alarms for threshold usage
+
+place for central documents
+	- overall system architecture
+	- thesis
+	- design systems
+	- secrets
+	- incident reports
+
+quick add
+	- note
+	- future task
+	- quick task
+
+environment
+	- view dependencies
+	- view/set relevant environment variables
+	- view/set sandbox parameters
+
+interactive timeline [HUGE]
+	- shows project history with major features
+	- zoom in for granular commit-level work w branches
+	- provides time-context for agents
+
+buttons
+	- open dir
+	- open vs code here
+	- open claude here
+	- open codex here
+	- start/stop service if applicable
+	- run tests
+	- view logs
+	- investigate (open claude code with a reference to the current status and ask why)
+	- emergency killswitch
+	- git status/push/pull
+	- run with arguments
+
+statistics
+	- uptime/downtime
+	- time spent working on
+	- error code %s
+	- custom stats
+	- feature coverage
+
+create/rename/delete repo
+	- behind several steps and password

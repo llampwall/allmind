@@ -1,0 +1,14 @@
+dashboard todo
+
+	- fetch git statuses in background interval w cache
+	
+dashboard todo later
+
+	- make git status event driven via hooks
+		- post-commit, post-checkout, post-merge hooks write to a status table
+		- Dashboard reads the table, never spawns git processes
+		- Strap could install these hooks on strap adopt - fits perfectly with the architecture
+		- Near-zero overhead, always current
+		
+
+claude --resume ec11beee-68d7-4bd9-912e-aff2ea020a45
