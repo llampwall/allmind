@@ -734,7 +734,11 @@ export default function C3Dashboard() {
                     {contexts.map(ctx => {
                       const isStale = ctx.updated_at && (new Date() - new Date(ctx.updated_at)) > 7 * 24 * 60 * 60 * 1000;
                       return (
-                        <div key={ctx.name} className="flex items-center gap-3 p-3 hover:bg-gray-800/50">
+                        <div
+                          key={ctx.name}
+                          className="flex items-center gap-3 p-3 hover:bg-gray-800/50 cursor-pointer"
+                          onClick={() => { setSearchContext(ctx.name); setActiveTab('search'); }}
+                        >
                           <Database className="w-4 h-4 text-gray-500" />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
@@ -748,12 +752,7 @@ export default function C3Dashboard() {
                           <div className="text-sm text-gray-400">
                             <RelativeTime date={ctx.updated_at} />
                           </div>
-                          <button 
-                            onClick={() => { setSearchContext(ctx.name); setActiveTab('search'); }}
-                            className="p-1.5 hover:bg-gray-700 rounded"
-                          >
-                            <Search className="w-4 h-4 text-gray-400" />
-                          </button>
+                          <Search className="w-4 h-4 text-gray-400" />
                         </div>
                       );
                     })}
