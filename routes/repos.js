@@ -42,13 +42,17 @@ async function refreshReposCache() {
       const repoExists = await exists(repoPath);
 
       // Build repo object from registry entry
+      // Handle both array and object formats for shims
+      const shimCount = Array.isArray(regEntry.shims) ? regEntry.shims.length :
+                       (regEntry.shims && typeof regEntry.shims === 'object' ? 1 : 0);
+
       const repo = {
         name: regEntry.name,
         id: regEntry.id,
         scope: regEntry.scope,
         path: repoPath,
         exists: repoExists,
-        shimCount: regEntry.shims?.length || 0,
+        shimCount,
         createdAt: regEntry.created_at,
         updatedAt: regEntry.updated_at,
       };

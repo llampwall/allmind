@@ -76,7 +76,11 @@ strapRoutes.get('/shims', async (req, res, next) => {
     if (registry?.repos) {
       const shimOwners = new Map();
       for (const repo of registry.repos) {
-        for (const shim of repo.shims || []) {
+        // Handle both array and object formats for shims
+        const shimsList = Array.isArray(repo.shims) ? repo.shims :
+                         (repo.shims && typeof repo.shims === 'object' ? [repo.shims] : []);
+
+        for (const shim of shimsList) {
           const existing = shimOwners.get(shim.name);
           if (existing && existing !== repo.name) {
             collisions.push({
@@ -93,7 +97,11 @@ strapRoutes.get('/shims', async (req, res, next) => {
     const registeredShims = new Set();
     if (registry?.repos) {
       for (const repo of registry.repos) {
-        for (const shim of repo.shims || []) {
+        // Handle both array and object formats for shims
+        const shimsList = Array.isArray(repo.shims) ? repo.shims :
+                         (repo.shims && typeof repo.shims === 'object' ? [repo.shims] : []);
+
+        for (const shim of shimsList) {
           registeredShims.add(shim.name);
         }
       }
