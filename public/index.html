@@ -484,10 +484,10 @@
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                               <span className="text-xs bg-gray-600 px-2 py-0.5 rounded">{r.source_type || 'unknown'}</span>
                               {r.context && <span className="text-xs bg-blue-600/30 text-blue-400 px-2 py-0.5 rounded">{r.context}</span>}
-                              <span className="text-xs text-gray-400 truncate flex-1">{r.source_path || r.chunk_id}</span>
-                              <span className="text-xs text-gray-500">score: {r.score?.toFixed(3)}</span>
+                              <span className="text-xs text-gray-400 truncate flex-1" title={r.source_uri}>{r.source_uri?.split('\\').pop() || r.chunk_id}</span>
+                              <span className="text-xs text-gray-500">rank: {r.scores?.rank?.toFixed(3) || 'N/A'}</span>
                             </div>
-                            <div className="text-sm text-gray-300 font-mono whitespace-pre-wrap max-h-32 overflow-auto">{r.content?.slice(0, 500)}{r.content?.length > 500 ? '...' : ''}</div>
+                            <div className="text-sm text-gray-300 font-mono whitespace-pre-wrap max-h-32 overflow-auto">{r.text?.slice(0, 500)}{r.text?.length > 500 ? '...' : ''}</div>
                           </div>
                         ))}
                       </div>
