@@ -1,6 +1,7 @@
 dashboard wishlist
 - each of these should be per-repo
 - but also the main page should have this for the full system
+- new skin potentially: https://github.com/educlopez/thegridcn-ui
 
 heads up section
 	- last thing done 
