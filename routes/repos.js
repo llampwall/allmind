@@ -30,8 +30,8 @@ async function refreshReposCache() {
 
     // Filter to actual repos (has .git)
     for (const dir of rootDirs) {
-      // Skip special directories
-      if (dir.startsWith('_') || dir.startsWith('.')) continue;
+      // Skip special directories (except _strap)
+      if ((dir.startsWith('_') && dir !== '_strap') || dir.startsWith('.')) continue;
 
       const repoPath = join(config.strapRoot, dir);
       const gitDir = join(repoPath, '.git');
