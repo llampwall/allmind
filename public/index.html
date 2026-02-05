@@ -97,6 +97,27 @@
       );
     };
 
+    const SetupBadge = ({ setup }) => {
+      const result = setup?.result || 'not_attempted';
+      const styles = {
+        succeeded: 'bg-green-500/20 text-green-400 border-green-500/30',
+        failed: 'bg-red-500/20 text-red-400 border-red-500/30',
+        skipped: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+        not_attempted: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+      };
+      const labels = {
+        succeeded: 'SETUP: OK',
+        failed: 'SETUP: FAILED',
+        skipped: 'SETUP: SKIPPED',
+        not_attempted: 'SETUP: PENDING',
+      };
+      return (
+        <span className={`px-2 py-0.5 text-xs font-medium rounded border ${styles[result] || styles.not_attempted}`}>
+          {labels[result] || labels.not_attempted}
+        </span>
+      );
+    };
+
     const RelativeTime = ({ date }) => {
       if (!date) return <span className="text-gray-500">never</span>;
       const diffMs = new Date() - new Date(date);
@@ -145,6 +166,7 @@
               <div className="flex items-center gap-2">
                 <span className="font-medium text-white">{repo.name}</span>
                 <StatusBadge status={repo.git?.status || 'unknown'} />
+                <SetupBadge setup={repo.setup} />
                 {repo.git?.ahead > 0 && <span className="text-xs text-green-400">↑{repo.git.ahead}</span>}
                 {repo.git?.behind > 0 && <span className="text-xs text-yellow-400">↓{repo.git.behind}</span>}
               </div>
@@ -167,6 +189,20 @@
               <div className="bg-gray-800/50 rounded p-3 space-y-2">
                 <div className="text-xs text-gray-500 font-mono truncate">{repo.path}</div>
                 {repo.strapEntry && <div className="flex gap-4 text-gray-400 text-xs"><span>Scope: {repo.strapEntry.scope}</span><span>Shims: {repo.strapEntry.shimCount}</span></div>}
+                <div className="border-t border-gray-700 pt-2">
+                  <div className="text-xs font-medium text-gray-300 mb-1">Setup</div>
+                  <div className="flex gap-4 text-gray-400 text-xs">
+                    <span>Status: <span className={repo.setup?.result === 'succeeded' ? 'text-green-400' : repo.setup?.result === 'failed' ? 'text-red-400' : repo.setup?.result === 'skipped' ? 'text-yellow-400' : 'text-gray-400'}>{repo.setup?.result?.toUpperCase() || 'NOT ATTEMPTED'}</span></span>
+                    {repo.setup?.last_attempt && <span>Last attempt: <RelativeTime date={repo.setup.last_attempt} /></span>}
+                    {!repo.setup?.last_attempt && <span>Last attempt: —</span>}
+                  </div>
+                  {repo.setup?.result === 'failed' && repo.setup?.error && (
+                    <div className="text-xs text-red-400 mt-1">Error: {repo.setup.error}</div>
+                  )}
+                  {repo.setup?.result === 'failed' && !repo.setup?.error && (
+                    <div className="text-xs text-red-400 mt-1">Error: No error details</div>
+                  )}
+                </div>
                 <div className="flex gap-2 pt-2">
                   {repo.testCommand && <button onClick={() => onAction('test', repo)} className="text-xs px-3 py-1.5 bg-green-600 hover:bg-green-500 rounded text-white flex items-center gap-1"><Play className="w-3 h-3" /> Run Tests</button>}
                   <button onClick={() => onAction('git-pull', repo)} className="text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-gray-300">Git Pull</button>
