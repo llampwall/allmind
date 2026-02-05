@@ -70,5 +70,24 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       windowsHide: true,
     },
+
+    // Chinvex Sync - File watcher daemon for auto-ingestion
+    {
+      name: 'chinvex-sync',
+      script: 'P:\\software\\chinvex\\.venv\\Scripts\\pythonw.exe',  // windowless python (logs go to file)
+      args: '-m chinvex.sync.process "C:\\Users\\Jordan\\.chinvex" "P:\\ai_memory\\contexts"',
+      cwd: 'P:\\software\\chinvex',
+      interpreter: 'none',
+      exec_mode: 'fork',
+      instances: 1,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: 5000,
+      restart_delay: 5000,
+      error_file: 'P:\\software\\chinvex\\logs\\sync-error.log',
+      out_file: 'P:\\software\\chinvex\\logs\\sync-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      windowsHide: true,
+    },
   ],
 };
