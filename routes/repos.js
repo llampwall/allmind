@@ -55,6 +55,7 @@ async function refreshReposCache() {
         shimCount,
         createdAt: regEntry.created_at,
         updatedAt: regEntry.updated_at,
+        setup: regEntry.setup,
       };
 
       // Enrich with git status if repo exists and has .git
@@ -175,15 +176,24 @@ reposRoutes.get('/:name', async (req, res, next) => {
       return res.status(404).json({ error: 'Repo not found', name });
     }
 
+    // Try to find repo in cache first for registry data
+    const cachedRepo = reposCache.data?.repos.find(r => r.name === name);
+
     const gitStatus = await getGitStatus(repoPath);
 
-    // Get recent commits
+    // Get recent commits with more details
     let recentCommits = [];
     try {
-      const logResult = await runCmd('git', ['log', '--oneline', '-10'], { cwd: repoPath });
+      const logResult = await runCmd('git', ['log', '--format=%H|%an|%ae|%at|%s', '-10'], { cwd: repoPath });
       recentCommits = logResult.stdout.split('\n').filter(Boolean).map(line => {
-        const [hash, ...msg] = line.split(' ');
-        return { hash, message: msg.join(' ') };
+        const [hash, author, email, timestamp, ...msgParts] = line.split('|');
+        return {
+          hash,
+          author,
+          email,
+          date: new Date(parseInt(timestamp) * 1000).toISOString(),
+          message: msgParts.join('|')
+        };
       });
     } catch { /* ignore */ }
 
@@ -197,12 +207,45 @@ reposRoutes.get('/:name', async (req, res, next) => {
       try { memory.constraints = await readFile(join(memoryPath, 'CONSTRAINTS.md'), 'utf-8'); } catch {}
     }
 
+    // Check for special files
+    const hasClaudeProject = await exists(join(repoPath, '.claude'));
+    const hasVenv = await exists(join(repoPath, '.venv')) || await exists(join(repoPath, 'venv'));
+    const hasPackageJson = await exists(join(repoPath, 'package.json'));
+    const hasPyproject = await exists(join(repoPath, 'pyproject.toml'));
+    const hasMemory = await exists(join(repoPath, 'docs', 'memory', 'STATE.md'));
+
+    const tools = {
+      claudeProject: hasClaudeProject,
+      venv: hasVenv,
+      node: hasPackageJson,
+      python: hasPyproject,
+      memory: hasMemory,
+    };
+
+    // Check for test scripts
+    let testCommand = null;
+    if (hasPackageJson) {
+      const pkg = await readJson(join(repoPath, 'package.json'));
+      if (pkg?.scripts?.test) testCommand = 'npm test';
+    }
+    if (hasPyproject || await exists(join(repoPath, 'tests'))) {
+      testCommand = testCommand || 'pytest';
+    }
+
     res.json({
       name,
       path: repoPath,
       git: gitStatus,
       recentCommits,
       memory,
+      tools,
+      testCommand,
+      setup: cachedRepo?.setup,
+      strapEntry: cachedRepo ? {
+        scope: cachedRepo.scope,
+        shimCount: cachedRepo.shimCount,
+        id: cachedRepo.id,
+      } : null,
     });
   } catch (err) {
     next(err);

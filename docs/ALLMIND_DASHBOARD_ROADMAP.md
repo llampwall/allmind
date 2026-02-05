@@ -218,11 +218,11 @@ Response: `201 Created`
 
 ### Buttons (Expanded)
 
-Current buttons work. Need to add per-repo:
-- Open dir (explorer)
+Current buttons work. Need to add per-repo (some of these we have):
+- Open dir (File Pilot)
 - Open VS Code (`code {path}`)
 - Open Claude (`claude --dir {path}`)
-- Open Codex (if available)
+- Open Codex 
 - Run tests (`strap test` or detect test runner)
 - View logs (tail recent log files)
 - **Investigate** — opens Claude Code with: "Read STATE.md and recent git log for {repo}. What's the current status and what needs attention?"
@@ -233,11 +233,9 @@ Current buttons work. Need to add per-repo:
 ### Central Documents
 
 File browser / link collection pointing to:
-- System architecture docs
-- Project thesis / vision docs
-- Design system references
-- Secrets vault (reference only — never display values, link to vault)
-- Incident reports
+- /docs
+- README.md
+- CLAUDE.md + AGENTS.md if there
 
 Could be a simple curated JSON/markdown file that the dashboard renders as a link grid.
 
