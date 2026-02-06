@@ -1,20 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--
+  UI Theme: TheGridCN Ares (Tron-inspired)
+  Applied: 2026-02-06
+  Approach: CSS variables and utility classes (no build step)
+  Colors: Ares red (#ff3333) with glow effects
+  Effects: Scanlines, backdrop blur, animated borders
+-->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AllMind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'ares': {
+              50: '#ffe5e5',
+              100: '#ffcccc',
+              200: '#ff9999',
+              300: '#ff6666',
+              400: '#ff4d4d',
+              500: '#ff3333',
+              600: '#cc0000',
+              700: '#990000',
+              800: '#660000',
+              900: '#330000',
+            }
+          },
+          boxShadow: {
+            'glow-red': '0 0 20px rgba(255, 51, 51, 0.5)',
+            'glow-red-sm': '0 0 10px rgba(255, 51, 51, 0.3)',
+            'glow-green': '0 0 15px rgba(16, 185, 129, 0.4)',
+            'glow-yellow': '0 0 15px rgba(245, 158, 11, 0.4)',
+          }
+        }
+      }
+    }
+  </script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/react-router-dom@5.3.4/umd/react-router-dom.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    body { margin: 0; background: #111827; }
-    .loading-screen { display: flex; align-items: center; justify-content: center; height: 100vh; color: #9ca3af; font-family: system-ui; }
+    /* Ares Theme Variables */
+    :root {
+      --ares-primary: 0 84% 60%; /* HSL for #ff3333 red */
+      --ares-primary-glow: rgba(255, 51, 51, 0.6);
+      --ares-bg-dark: #0a0a0a;
+      --ares-bg-panel: rgba(10, 10, 10, 0.85);
+      --ares-border: rgba(255, 51, 51, 0.3);
+      --ares-text-primary: #ffffff;
+      --ares-text-secondary: rgba(255, 255, 255, 0.7);
+      --ares-success: #10b981;
+      --ares-warning: #f59e0b;
+      --ares-error: #ef4444;
+    }
+
+    body { margin: 0; background: #05080a; font-family: 'Rajdhani', system-ui, sans-serif; }
+    .loading-screen { display: flex; align-items: center; justify-content: center; height: 100vh; color: #9ca3af; font-family: 'Rajdhani', system-ui; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .animate-spin { animation: spin 1s linear infinite; }
+
+    /* Tron Visual Effects */
+    .tron-border {
+      border: 1px solid var(--ares-border);
+    }
+
+    .tron-border-heavy {
+      border: 1px solid rgba(255, 51, 51, 0.5);
+    }
+
+    .tron-glow-text {
+      text-shadow: 0 0 8px rgba(255, 51, 51, 0.4);
+    }
+
+    .tron-glow-sm {
+      box-shadow: 0 0 4px rgba(255, 51, 51, 0.2);
+    }
+
+    .tron-glow-md {
+      box-shadow: 0 0 8px rgba(255, 51, 51, 0.3);
+    }
+
+    .scanline {
+      background-image: linear-gradient(transparent 50%, rgba(255,51,51,0.02) 50%);
+      background-size: 100% 4px;
+      background-repeat: repeat;
+    }
+
+    .page-wrapper {
+      position: relative;
+    }
+
+    .page-wrapper::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: linear-gradient(transparent 50%, rgba(255,51,51,0.015) 50%);
+      background-size: 100% 3px;
+      background-repeat: repeat;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .tron-backdrop {
+      backdrop-filter: blur(8px);
+      background: rgba(5, 8, 10, 0.85);
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 4px rgba(255, 51, 51, 0.2); }
+      50% { box-shadow: 0 0 8px rgba(255, 51, 51, 0.4); }
+    }
+
+    .tron-pulse {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .tron-grid-bg {
+      background-image:
+        linear-gradient(rgba(255,51,51,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,51,51,0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* HUD Frame Effect */
+    .hud-frame {
+      position: relative;
+      border: 1px solid rgba(255, 51, 51, 0.4);
+    }
+    .hud-frame::before,
+    .hud-frame::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 1px solid rgba(255, 51, 51, 0.8);
+    }
+    .hud-frame::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .hud-frame::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+    }
+
+    /* Data Card */
+    .data-card {
+      background: rgba(5, 8, 10, 0.6);
+      border: 1px solid rgba(255, 51, 51, 0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    /* Input styling */
+    input, select, textarea {
+      font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+    }
 
     /* Markdown styling */
     .markdown-content { font-size: 0.875rem; line-height: 1.6; color: #d1d5db; }
@@ -135,18 +292,18 @@
 
     const StatusBadge = ({ status }) => {
       const styles = {
-        ok: 'bg-green-500/20 text-green-400 border-green-500/30',
-        running: 'bg-green-500/20 text-green-400 border-green-500/30',
-        online: 'bg-green-500/20 text-green-400 border-green-500/30',
-        clean: 'bg-green-500/20 text-green-400 border-green-500/30',
-        error: 'bg-red-500/20 text-red-400 border-red-500/30',
-        errored: 'bg-red-500/20 text-red-400 border-red-500/30',
-        warning: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-        unknown: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-        stopped: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-        stale: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-        dirty: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-        missing: 'bg-red-500/20 text-red-400 border-red-500/30',
+        ok: 'bg-green-500/10 text-green-400 border-green-500/50 tron-glow-sm',
+        running: 'bg-green-500/10 text-green-400 border-green-500/50 tron-pulse',
+        online: 'bg-ares-500/10 text-ares-400 border-ares-500/50 tron-glow-sm',
+        clean: 'bg-blue-500/10 text-blue-400 border-blue-500/50',
+        error: 'bg-red-500/10 text-red-400 border-red-500/50 tron-glow-sm',
+        errored: 'bg-red-500/10 text-red-400 border-red-500/50 tron-glow-sm',
+        warning: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/50',
+        unknown: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
+        stopped: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
+        stale: 'bg-orange-500/10 text-orange-400 border-orange-500/50',
+        dirty: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/50',
+        missing: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
       };
       return (
         <span className={`px-2 py-0.5 text-xs font-medium rounded border ${styles[status] || styles.unknown}`}>
@@ -158,10 +315,10 @@
     const SetupBadge = ({ setup }) => {
       const result = setup?.result || 'not_attempted';
       const styles = {
-        succeeded: 'bg-green-500/20 text-green-400 border-green-500/30',
-        failed: 'bg-red-500/20 text-red-400 border-red-500/30',
-        skipped: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-        not_attempted: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+        succeeded: 'bg-green-500/10 text-green-400 border-green-500/50 tron-glow-sm',
+        failed: 'bg-red-500/10 text-red-400 border-red-500/50 tron-glow-sm',
+        skipped: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/50',
+        not_attempted: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
       };
       const labels = {
         succeeded: 'SETUP: OK',
@@ -190,22 +347,22 @@
     const formatUptime = (ms) => { if (!ms) return '—'; const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60),d=Math.floor(h/24); return d>0?`${d}d ${h%24}h`:h>0?`${h}h ${m%60}m`:m>0?`${m}m`:`${s}s`; };
 
     const ServiceCard = ({ name, icon: IconComp, status, details, actions, error, loading }) => (
-      <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <div className="tron-backdrop rounded-lg p-4 tron-border">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <IconComp className="w-5 h-5 text-gray-400" />
             <span className="font-medium text-white">{name}</span>
           </div>
-          {loading ? <Loader2 className="w-4 h-4 text-gray-400" /> : <StatusBadge status={status} />}
+          {loading ? <Loader2 className="w-4 h-4 text-ares-400 drop-shadow-glow" /> : <StatusBadge status={status} />}
         </div>
-        {error && <div className="text-xs text-red-400 mb-2 font-mono bg-red-500/10 p-2 rounded truncate">{error}</div>}
+        {error && <div className="text-xs text-red-400 mb-2 font-mono bg-red-500/10 p-2 rounded truncate tron-border">{error}</div>}
         <div className="text-sm text-gray-400 space-y-1 mb-3">
-          {details.map((d, i) => <div key={i} className="flex justify-between"><span>{d.label}</span><span className="text-gray-300 truncate ml-2">{d.value}</span></div>)}
+          {details.map((d, i) => <div key={i} className="flex justify-between"><span>{d.label}</span><span className="text-gray-300 truncate ml-2 font-mono">{d.value}</span></div>)}
         </div>
         {actions?.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-700">
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10/50">
             {actions.map((a, i) => (
-              <button key={i} onClick={a.onClick} disabled={a.disabled || loading} className="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 disabled:opacity-50 flex items-center gap-1">
+              <button key={i} onClick={a.onClick} disabled={a.disabled || loading} className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 hover:tron-glow-sm transition-all duration-200 rounded text-gray-300 disabled:opacity-50 flex items-center gap-1 border border-white/20/30">
                 {a.icon && <a.icon className="w-3 h-3" />}{a.label}
               </button>
             ))}
@@ -217,19 +374,19 @@
     const RepoRow = ({ repo, onAction }) => {
       const [expanded, setExpanded] = useState(false);
       return (
-        <div className="border-b border-gray-700 last:border-0">
-          <div className="flex items-center gap-3 p-3 hover:bg-gray-800/50 cursor-pointer" onClick={() => setExpanded(!expanded)}>
-            {expanded ? <ChevronDown className="w-4 h-4 text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
+        <div className="border-b border-white/10/50 last:border-0">
+          <div className="flex items-center gap-3 p-3 hover:bg-gray-800/50 hover:tron-glow-sm transition-all duration-200 cursor-pointer tron-border" onClick={() => setExpanded(!expanded)}>
+            {expanded ? <ChevronDown className="w-4 h-4 text-ares-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-white">{repo.name}</span>
                 <StatusBadge status={repo.git?.status || 'unknown'} />
                 {repo.chinvexStatus && repo.chinvexStatus.status !== 'unknown' && (
                   <span className={`px-2 py-0.5 text-xs font-medium rounded border ${
-                    repo.chinvexStatus.status === 'ingesting' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
-                    repo.chinvexStatus.status === 'idle' ? 'bg-gray-500/20 text-gray-400 border-gray-500/30' :
-                    repo.chinvexStatus.status === 'stale' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
-                    'bg-red-500/20 text-red-400 border-red-500/30'
+                    repo.chinvexStatus.status === 'ingesting' ? 'bg-blue-500/10 text-blue-400 border-blue-500/50' :
+                    repo.chinvexStatus.status === 'idle' ? 'bg-gray-500/10 text-gray-400 border-gray-500/30' :
+                    repo.chinvexStatus.status === 'stale' ? 'bg-orange-500/10 text-orange-400 border-orange-500/50 tron-glow-sm' :
+                    'bg-red-500/10 text-red-400 border-red-500/50 tron-glow-sm'
                   }`} title={repo.chinvexStatus.message || ''}>
                     CHINVEX: {repo.chinvexStatus.status.toUpperCase()}
                   </span>
@@ -239,25 +396,25 @@
                 {repo.git?.behind > 0 && <span className="text-xs text-yellow-400">↓{repo.git.behind}</span>}
               </div>
               <div className="text-xs text-gray-500 flex gap-2 mt-0.5">
-                <span>{repo.git?.branch || 'unknown'}</span>
-                {repo.tools?.claudeProject && <span className="text-blue-400">claude</span>}
+                <span className="font-mono">{repo.git?.branch || 'unknown'}</span>
+                {repo.tools?.claudeProject && <span className="text-ares-400">claude</span>}
                 {repo.tools?.venv && <span className="text-green-400">venv</span>}
                 {repo.tools?.node && <span className="text-yellow-400">node</span>}
                 {repo.tools?.memory && <span className="text-purple-400">memory</span>}
               </div>
             </div>
             <div className="flex gap-1">
-              <button onClick={(e) => { e.stopPropagation(); onAction('open-claude', repo); }} className="p-1.5 hover:bg-gray-700 rounded" title="Open Claude"><Zap className="w-4 h-4 text-blue-400" /></button>
-              <button onClick={(e) => { e.stopPropagation(); onAction('open-vscode', repo); }} className="p-1.5 hover:bg-gray-700 rounded" title="Open VS Code"><Code className="w-4 h-4 text-gray-400" /></button>
-              <button onClick={(e) => { e.stopPropagation(); onAction('open-terminal', repo); }} className="p-1.5 hover:bg-gray-700 rounded" title="Open Terminal"><TerminalSquare className="w-4 h-4 text-gray-400" /></button>
+              <button onClick={(e) => { e.stopPropagation(); onAction('open-claude', repo); }} className="p-1.5 hover:bg-black/40 hover:text-ares-400 transition-colors rounded" title="Open Claude"><Zap className="w-4 h-4 text-ares-400" /></button>
+              <button onClick={(e) => { e.stopPropagation(); onAction('open-vscode', repo); }} className="p-1.5 hover:bg-black/40 hover:text-ares-400 transition-colors rounded" title="Open VS Code"><Code className="w-4 h-4 text-gray-400" /></button>
+              <button onClick={(e) => { e.stopPropagation(); onAction('open-terminal', repo); }} className="p-1.5 hover:bg-black/40 hover:text-ares-400 transition-colors rounded" title="Open Terminal"><TerminalSquare className="w-4 h-4 text-gray-400" /></button>
             </div>
           </div>
           {expanded && (
             <div className="px-10 pb-3 text-sm">
-              <div className="bg-gray-800/50 rounded p-3 space-y-2">
+              <div className="tron-backdrop rounded p-3 space-y-2 tron-border">
                 <div className="text-xs text-gray-500 font-mono truncate">{repo.path}</div>
                 {repo.strapEntry && <div className="flex gap-4 text-gray-400 text-xs"><span>Scope: {repo.strapEntry.scope}</span><span>Shims: {repo.strapEntry.shimCount}</span></div>}
-                <div className="border-t border-gray-700 pt-2">
+                <div className="border-t border-white/10/50 pt-2">
                   <div className="text-xs font-medium text-gray-300 mb-1">Setup</div>
                   <div className="flex gap-4 text-gray-400 text-xs">
                     <span>Status: <span className={repo.setup?.result === 'succeeded' ? 'text-green-400' : repo.setup?.result === 'failed' ? 'text-red-400' : repo.setup?.result === 'skipped' ? 'text-yellow-400' : 'text-gray-400'}>{repo.setup?.result?.toUpperCase() || 'NOT ATTEMPTED'}</span></span>
@@ -265,16 +422,16 @@
                     {!repo.setup?.last_attempt && <span>Last attempt: —</span>}
                   </div>
                   {repo.setup?.result === 'failed' && repo.setup?.error && (
-                    <div className="text-xs text-red-400 mt-1">Error: {repo.setup.error}</div>
+                    <div className="text-xs text-red-400 mt-1 tron-border bg-red-500/5 p-2 rounded">Error: {repo.setup.error}</div>
                   )}
                   {repo.setup?.result === 'failed' && !repo.setup?.error && (
-                    <div className="text-xs text-red-400 mt-1">Error: No error details</div>
+                    <div className="text-xs text-red-400 mt-1 tron-border bg-red-500/5 p-2 rounded">Error: No error details</div>
                   )}
                 </div>
                 <div className="flex gap-2 pt-2">
-                  {repo.testCommand && <button onClick={() => onAction('test', repo)} className="text-xs px-3 py-1.5 bg-green-600 hover:bg-green-500 rounded text-white flex items-center gap-1"><Play className="w-3 h-3" /> Run Tests</button>}
-                  <button onClick={() => onAction('git-pull', repo)} className="text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-gray-300">Git Pull</button>
-                  {repo.tools?.memory && <button onClick={() => onAction('view-memory', repo)} className="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded text-white">View Memory</button>}
+                  {repo.testCommand && <button onClick={() => onAction('test', repo)} className="text-xs px-3 py-1.5 bg-green-600 hover:bg-green-500 hover:border-green-400 transition-all duration-200 rounded text-white flex items-center gap-1"><Play className="w-3 h-3" /> Run Tests</button>}
+                  <button onClick={() => onAction('git-pull', repo)} className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 transition-all duration-200 rounded text-gray-300">Git Pull</button>
+                  {repo.tools?.memory && <button onClick={() => onAction('view-memory', repo)} className="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-500 transition-all duration-200 rounded text-white">View Memory</button>}
                 </div>
               </div>
             </div>
@@ -287,25 +444,25 @@
       const isPm2 = service.id?.startsWith('pm2-');
       const isOnline = service.status === 'online' || service.status === 'running';
       return (
-        <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700">
-          <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-500'}`} />
+        <div className="flex items-center gap-3 p-3 tron-backdrop rounded-lg tron-border hover:tron-border-heavy transition-all duration-200">
+          <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400 tron-pulse' : 'bg-gray-500'}`} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2"><span className="font-medium text-white">{service.name}</span><StatusBadge status={service.status} /></div>
             <div className="text-xs text-gray-500 flex gap-3 mt-0.5">
-              {service.pid && <span>PID: {service.pid}</span>}
-              {service.uptime && <span>Up: {formatUptime(service.uptime)}</span>}
-              {service.memory && <span>Mem: {formatBytes(service.memory)}</span>}
+              {service.pid && <span className="font-mono">PID: {service.pid}</span>}
+              {service.uptime && <span className="font-mono">Up: {formatUptime(service.uptime)}</span>}
+              {service.memory && <span className="font-mono">Mem: {formatBytes(service.memory)}</span>}
               {service.restarts > 0 && <span className="text-yellow-400">Restarts: {service.restarts}</span>}
             </div>
-            {service.error && <div className="text-xs text-red-400 mt-1 truncate">{service.error}</div>}
+            {service.error && <div className="text-xs text-red-400 mt-1 truncate bg-red-500/5 p-1 rounded tron-border">{service.error}</div>}
           </div>
           {isPm2 && (
             <div className="flex gap-1">
-              <button onClick={() => onAction('restart', service)} disabled={actionLoading === service.id} className="p-1.5 hover:bg-gray-700 rounded disabled:opacity-50" title="Restart">
-                {actionLoading === service.id ? <Loader2 className="w-4 h-4 text-gray-400" /> : <RotateCcw className="w-4 h-4 text-gray-400" />}
+              <button onClick={() => onAction('restart', service)} disabled={actionLoading === service.id} className="p-1.5 hover:bg-black/40 hover:text-ares-400 transition-colors rounded disabled:opacity-50" title="Restart">
+                {actionLoading === service.id ? <Loader2 className="w-4 h-4 text-ares-400" /> : <RotateCcw className="w-4 h-4 text-gray-400" />}
               </button>
-              {isOnline ? <button onClick={() => onAction('stop', service)} className="p-1.5 hover:bg-gray-700 rounded" title="Stop"><StopCircle className="w-4 h-4 text-gray-400" /></button>
-                : <button onClick={() => onAction('start', service)} className="p-1.5 hover:bg-gray-700 rounded" title="Start"><Play className="w-4 h-4 text-green-400" /></button>}
+              {isOnline ? <button onClick={() => onAction('stop', service)} className="p-1.5 hover:bg-black/40 hover:text-ares-400 transition-colors rounded" title="Stop"><StopCircle className="w-4 h-4 text-gray-400" /></button>
+                : <button onClick={() => onAction('start', service)} className="p-1.5 hover:bg-black/40 hover:text-green-400 transition-colors rounded" title="Start"><Play className="w-4 h-4 text-green-400" /></button>}
             </div>
           )}
         </div>
@@ -318,7 +475,7 @@
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-mono text-white">{shim.name}</span>
-            <span className="text-xs px-1.5 py-0.5 bg-gray-700 rounded text-gray-400">{shim.type}</span>
+            <span className="text-xs px-1.5 py-0.5 bg-black/30rounded text-gray-400">{shim.type}</span>
             {!shim.cmdExists && <span className="text-xs text-yellow-400">missing .cmd</span>}
           </div>
           <div className="text-xs text-gray-500 truncate">
@@ -343,7 +500,7 @@
     );
 
     // Sidebar Component
-    const Sidebar = ({ activeTab, setActiveTab, repos, services, loading, lastRefresh, onRefresh, api }) => {
+    const Sidebar = ({ activeTab, setActiveTab, repos, services, loading, lastRefresh, onRefresh, api, mobileMenuOpen, setMobileMenuOpen }) => {
       const history = useHistory();
       const location = useLocation();
       const [restarting, setRestarting] = useState(false);
@@ -363,21 +520,24 @@
       const handleNavClick = (tabId) => {
         setActiveTab(tabId);
         history.push('/');
+        setMobileMenuOpen(false);
       };
 
       const handleLogoClick = () => {
         setActiveTab('overview');
         history.push('/');
+        setMobileMenuOpen(false);
       };
 
       const handleRepoClick = (repoName) => {
         history.push(`/repo/${encodeURIComponent(repoName)}`);
+        setMobileMenuOpen(false);
       };
 
       const getRepoStatus = (repo) => {
-        if (repo.git?.status === 'dirty') return 'bg-yellow-400';
-        if (repo.git?.status === 'clean') return 'bg-green-400';
-        if (repo.git?.status === 'error') return 'bg-red-400';
+        if (repo.git?.status === 'dirty') return 'bg-yellow-400 border-yellow-400';
+        if (repo.git?.status === 'clean') return 'bg-green-400 border-green-400';
+        if (repo.git?.status === 'error') return 'bg-red-400 border-ares-500';
         return 'bg-gray-500';
       };
 
@@ -398,27 +558,42 @@
       };
 
       return (
-        <div className="w-56 bg-gray-800 border-r border-gray-700 flex flex-col h-screen">
-          <div className="p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-700/50" onClick={handleLogoClick}>
-            <div className="flex items-center gap-2"><Zap className="w-6 h-6 text-blue-400" /><span className="font-bold text-lg">ALLMIND</span></div>
+        <>
+          {/* Mobile overlay */}
+          {mobileMenuOpen && (
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+          )}
+
+          {/* Sidebar */}
+          <div className={`
+            w-56 tron-backdrop border-r tron-border flex flex-col h-screen
+            fixed lg:sticky top-0 z-50 lg:z-auto
+            transition-transform duration-300 ease-in-out
+            ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          `}>
+          <div className="p-4 border-b border-white/10 cursor-pointer hover:bg-black/30 transition-colors" onClick={handleLogoClick}>
+            <div className="flex items-center gap-2"><Zap className="w-6 h-6 text-ares-400 tron-glow-text" /><span className="font-bold text-lg">ALLMIND</span></div>
           </div>
           <nav className="flex-1 p-2 overflow-auto">
             <div className="mb-3">
               {navItems.map(item => (
                 <button key={item.id} onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm ${!isRepoRoute && activeTab === item.id ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'}`}>
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition-all duration-200 ${!isRepoRoute && activeTab === item.id ? 'bg-black/20 text-ares-400 border-l-2 border-ares-400' : 'text-gray-400 hover:bg-black/30 hover:text-ares-400 hover:border-l-2 hover:border-ares-500'}`}>
                   <item.icon className="w-4 h-4" />
                   <span className="flex-1 text-left">{item.label}</span>
-                  {item.badge && <span className="px-1.5 py-0.5 text-xs bg-gray-700 rounded">{item.badge}</span>}
+                  {item.badge && <span className="px-1.5 py-0.5 text-xs tron-backdrop tron-border rounded">{item.badge}</span>}
                 </button>
               ))}
             </div>
             {repos.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-gray-700">
+              <div className="mt-4 pt-3 border-t border-white/10/50">
                 <div className="text-xs text-gray-500 px-3 mb-2">Quick Access</div>
                 {repos.slice(0, 10).map(repo => (
                   <button key={repo.name} onClick={() => handleRepoClick(repo.name)}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm ${currentRepoName === repo.name ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'}`}>
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition-all duration-200 ${currentRepoName === repo.name ? 'bg-black/20 text-ares-400 border-l-2 border-ares-400' : 'text-gray-400 hover:bg-black/30 hover:text-ares-400'}`}>
                     <div className={`w-2 h-2 rounded-full ${getRepoStatus(repo)}`} />
                     <span className="flex-1 text-left truncate">{repo.name}</span>
                   </button>
@@ -426,16 +601,17 @@
               </div>
             )}
           </nav>
-          <div className="p-3 border-t border-gray-700 text-xs text-gray-500 space-y-2 bg-gray-800">
+          <div className="p-3 border-t border-white/10/50 text-xs text-gray-500 space-y-2 tron-backdrop">
             <div className="flex items-center justify-between"><span>Last refresh</span>{lastRefresh && <RelativeTime date={lastRefresh} />}</div>
-            <button onClick={onRefresh} disabled={loading} className="w-full flex items-center justify-center gap-1 py-1.5 bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50">
-              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Refresh
+            <button onClick={onRefresh} disabled={loading} className="w-full flex items-center justify-center gap-1 py-1.5 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 hover:tron-glow-sm transition-all duration-200 rounded disabled:opacity-50 border border-white/20/30">
+              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin text-ares-400' : ''}`} /> Refresh
             </button>
-            <button onClick={handleRestart} disabled={restarting || loading} className="w-full flex items-center justify-center gap-1 py-1.5 bg-orange-600 hover:bg-orange-500 rounded disabled:opacity-50 text-white">
+            <button onClick={handleRestart} disabled={restarting || loading} className="w-full flex items-center justify-center gap-1 py-1.5 bg-black/20 border border-ares-500 hover:border-ares-400 transition-all duration-200 rounded disabled:opacity-50 text-ares-400 hover:text-ares-300">
               <RotateCcw className={`w-3 h-3 ${restarting ? 'animate-spin' : ''}`} /> Restart Server
             </button>
           </div>
         </div>
+        </>
       );
     };
 
@@ -531,6 +707,16 @@
 
       useEffect(() => { fetchRepo(); }, [fetchRepo]);
       useEffect(() => { fetchTodos(); }, [fetchTodos]);
+
+      // Update document title to show repo name
+      useEffect(() => {
+        if (name) {
+          document.title = `${name} - AllMind`;
+        }
+        return () => {
+          document.title = 'AllMind';
+        };
+      }, [name]);
 
       const openEditModal = () => {
         const currentDepth = repo.strapEntry?.chinvexDepth !== undefined ? repo.strapEntry.chinvexDepth : 'full';
@@ -637,7 +823,7 @@
               <XCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
               <h2 className="text-xl font-semibold mb-2">Repository Not Found</h2>
               <p className="text-gray-400 mb-4">Could not find repository: {name}</p>
-              <button onClick={() => history.push('/')} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded">
+              <button onClick={() => history.push('/')} className="px-4 py-2 bg-ares-600 hover:bg-ares-500 hover:border-ares-400 transition-all duration-200 rounded">
                 Back to Overview
               </button>
             </div>
@@ -646,20 +832,20 @@
       }
 
       return (
-        <div className="p-6">
+        <div className="p-4 pt-16 lg:p-6 lg:pt-6 max-w-full overflow-x-hidden">
           {/* Depth Change Warning Modal */}
           {depthWarningOpen && (
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4">
-              <div className="bg-gray-800 rounded-lg border border-red-500/50 max-w-lg w-full">
-                <div className="flex items-center gap-2 p-4 border-b border-gray-700 bg-red-500/10">
-                  <AlertCircle className="w-5 h-5 text-red-400" />
+              <div className="tron-backdrop rounded-lg tron-border-heavy max-w-lg w-full border-red-500/50">
+                <div className="flex items-center gap-2 p-4 border-b border-white/10/50 bg-red-500/10">
+                  <AlertCircle className="w-5 h-5 text-red-400 tron-glow-sm" />
                   <h2 className="font-semibold text-red-400">Warning: Index Rebuild Required</h2>
                 </div>
                 <div className="p-4 space-y-3">
                   <p className="text-sm text-gray-300">
                     Changing ingestion depth requires rebuilding the index.
                   </p>
-                  <div className="bg-gray-700/50 rounded p-3 text-sm text-gray-300 space-y-1">
+                  <div className="bg-black/30 rounded p-3 text-sm text-gray-300 space-y-1">
                     <p className="font-medium">This will:</p>
                     <ul className="list-disc list-inside space-y-1 text-gray-400">
                       <li>Delete ALL indexed data for context "{repo.strapEntry?.chinvexContext || name}"</li>
@@ -671,10 +857,10 @@
                     Original depth: <span className="text-gray-300">{originalDepth || 'not set'}</span> → New depth: <span className="text-gray-300">{editForm.depth}</span>
                   </p>
                 </div>
-                <div className="flex gap-2 p-4 border-t border-gray-700">
+                <div className="flex gap-2 p-4 border-t border-white/10/50">
                   <button
                     onClick={() => { setDepthWarningOpen(false); setSaving(false); }}
-                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300"
+                    className="flex-1 px-4 py-2 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 hover:tron-glow-sm transition-all duration-200 rounded text-gray-300 border border-white/20/30"
                   >
                     Cancel
                   </button>
@@ -692,18 +878,18 @@
 
           {/* Edit Configuration Modal */}
           {editModalOpen && !depthWarningOpen && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-gray-800 rounded-lg border border-gray-700 max-w-md w-full">
-                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm tron-grid-bg flex items-center justify-center z-50 p-4">
+              <div className="tron-backdrop rounded-lg tron-border-heavy max-w-md w-full">
+                <div className="flex items-center justify-between p-4 border-b border-white/10/50">
                   <h2 className="font-semibold">Edit Configuration</h2>
-                  <button onClick={() => setEditModalOpen(false)} className="text-gray-400 hover:text-white">
+                  <button onClick={() => setEditModalOpen(false)} className="text-gray-400 hover:text-ares-400 transition-colors">
                     <XCircle className="w-5 h-5" />
                   </button>
                 </div>
                 <div className="p-4 space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
-                    <select value={editForm.status} onChange={(e) => setEditForm({...editForm, status: e.target.value})} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm">
+                    <select value={editForm.status} onChange={(e) => setEditForm({...editForm, status: e.target.value})} className="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-sm">
                       <option value="active">Active</option>
                       <option value="stable">Stable</option>
                       <option value="archived">Archived</option>
@@ -712,21 +898,21 @@
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Chinvex Depth</label>
-                    <select value={editForm.depth} onChange={(e) => setEditForm({...editForm, depth: e.target.value})} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm">
+                    <select value={editForm.depth} onChange={(e) => setEditForm({...editForm, depth: e.target.value})} className="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-sm">
                       <option value="light">Light</option>
                       <option value="full">Full</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Tags (comma-separated)</label>
-                    <input type="text" value={editForm.tags} onChange={(e) => setEditForm({...editForm, tags: e.target.value})} placeholder="tag1, tag2, tag3" className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" />
+                    <input type="text" value={editForm.tags} onChange={(e) => setEditForm({...editForm, tags: e.target.value})} placeholder="tag1, tag2, tag3" className="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-sm" />
                   </div>
                 </div>
-                <div className="flex gap-2 p-4 border-t border-gray-700">
-                  <button onClick={() => setEditModalOpen(false)} className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300">
+                <div className="flex gap-2 p-4 border-t border-white/10/50">
+                  <button onClick={() => setEditModalOpen(false)} className="flex-1 px-4 py-2 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 hover:tron-glow-sm transition-all duration-200 rounded text-gray-300 border border-white/20/30">
                     Cancel
                   </button>
-                  <button onClick={handleSaveConfig} disabled={saving} className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white disabled:opacity-50 flex items-center justify-center gap-2">
+                  <button onClick={handleSaveConfig} disabled={saving} className="flex-1 px-4 py-2 bg-black/20 border border-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-ares-400 hover:text-ares-300 disabled:opacity-50 flex items-center justify-center gap-2">
                     {saving ? <><Loader2 className="w-4 h-4" /> Saving...</> : 'Save Changes'}
                   </button>
                 </div>
@@ -736,22 +922,22 @@
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-            <button onClick={() => history.push('/')} className="hover:text-white">Home</button>
+            <button onClick={() => history.push('/')} className="hover:text-ares-400 transition-colors">Home</button>
             <ChevronRight className="w-4 h-4" />
-            <button onClick={() => history.push('/')} className="hover:text-white">Repos</button>
+            <button onClick={() => history.push('/')} className="hover:text-ares-400 transition-colors">Repos</button>
             <ChevronRight className="w-4 h-4" />
             <span className="text-white">{repo.name}</span>
           </div>
 
           {/* Main Layout: Left column (panels) + Right column (Heads Up) */}
-          <div className="flex gap-6 items-start">
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Left Column - Main Panels (2/3 width) */}
-            <div className="flex-1" style={{minWidth: 0}}>
+            <div className="flex-1 w-full lg:w-auto" style={{minWidth: 0}}>
               {/* Panel 1 - Repository Info */}
-              <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6"  style={{maxWidth: '100%'}}>
+              <div className="data-card rounded-lg p-4 lg:p-6 mb-6 w-full overflow-x-hidden">
             {/* Header with badges and Edit button */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold">{repo.name}</h1>
                 <StatusBadge status={repo.git?.status || 'unknown'} />
                 {repo.chinvexStatus && repo.chinvexStatus.status !== 'unknown' && (
@@ -768,7 +954,7 @@
                 {repo.git?.ahead > 0 && <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded border border-green-500/30">↑{repo.git.ahead}</span>}
                 {repo.git?.behind > 0 && <span className="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">↓{repo.git.behind}</span>}
               </div>
-              <button onClick={openEditModal} className="text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-gray-300">
+              <button onClick={openEditModal} className="text-xs px-3 py-1.5 bg-black/30hover:bg-black/50 rounded text-gray-300">
                 Edit
               </button>
             </div>
@@ -784,7 +970,7 @@
                 </div>
                 {repo.strapEntry?.tags && repo.strapEntry.tags.length > 0 && (
                   <div className="flex gap-1 mb-2 flex-wrap">
-                    {repo.strapEntry.tags.map((tag, i) => <span key={i} className="px-2 py-0.5 bg-gray-700 rounded text-xs text-gray-300">{tag}</span>)}
+                    {repo.strapEntry.tags.map((tag, i) => <span key={i} className="px-2 py-0.5 bg-black/30rounded text-xs text-gray-300">{tag}</span>)}
                   </div>
                 )}
                 <div className="flex gap-3 text-sm">
@@ -795,13 +981,13 @@
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <button onClick={() => handleAction('open-claude')} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white flex items-center gap-2 text-sm whitespace-nowrap">
+                <button onClick={() => handleAction('open-claude')} className="px-4 py-2 bg-black/20 border border-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-ares-400 hover:text-ares-300 flex items-center gap-2 text-sm whitespace-nowrap">
                   <Zap className="w-4 h-4" /> Open Claude
                 </button>
-                <button onClick={() => handleAction('open-vscode')} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 flex items-center gap-2 text-sm whitespace-nowrap">
+                <button onClick={() => handleAction('open-vscode')} className="px-4 py-2 bg-black/30hover:bg-black/50 rounded text-gray-300 flex items-center gap-2 text-sm whitespace-nowrap">
                   <Code className="w-4 h-4" /> Open VS Code
                 </button>
-                <button onClick={() => handleAction('open-terminal')} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 flex items-center gap-2 text-sm whitespace-nowrap">
+                <button onClick={() => handleAction('open-terminal')} className="px-4 py-2 bg-black/30hover:bg-black/50 rounded text-gray-300 flex items-center gap-2 text-sm whitespace-nowrap">
                   <TerminalSquare className="w-4 h-4" /> Open Terminal
                 </button>
               </div>
@@ -812,12 +998,12 @@
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" style={{maxWidth: '100%'}}>
 
             {/* Status Panel */}
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+            <div className="data-card rounded-lg p-6">
               <h2 className="font-semibold mb-4">Status</h2>
 
               {/* Setup Section */}
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-300 mb-3 pb-2 border-b border-gray-700">Setup</h3>
+                <h3 className="text-sm font-semibold text-gray-300 mb-3 pb-2 border-b border-white/10">Setup</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Result</span>
@@ -841,7 +1027,7 @@
               {/* Ingestion Section */}
               {repo.chinvexStatus && repo.chinvexStatus.status !== 'unknown' && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-300 mb-3 pb-2 border-b border-gray-700 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-300 mb-3 pb-2 border-b border-white/10 flex items-center gap-2">
                     <Database className="w-4 h-4" /> Ingestion
                   </h3>
                   <div className="space-y-3 text-sm">
@@ -886,7 +1072,7 @@
             </div>
 
             {/* Git Panel */}
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+            <div className="data-card rounded-lg p-6">
               <h2 className="font-semibold mb-4 flex items-center gap-2">
                 <GitBranch className="w-5 h-5" /> Git
               </h2>
@@ -919,14 +1105,14 @@
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => handleAction('git-pull')}
-                  className="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 text-sm"
+                  className="flex-1 px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 text-xs transition-all"
                 >
                   Pull
                 </button>
                 <button
                   onClick={() => handleAction('git-push')}
                   disabled={!repo.git?.ahead || repo.git.ahead === 0}
-                  className="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Push
                 </button>
@@ -934,15 +1120,15 @@
 
               {/* Recent Commits */}
               {repo.recentCommits && repo.recentCommits.length > 0 && (
-                <div className="border-t border-gray-700 pt-4">
+                <div className="border-t border-white/10 pt-4">
                   <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
                     <GitCommit className="w-4 h-4" /> Recent Commits
                   </h3>
                   <div className="space-y-2">
                     {(showAllCommits ? repo.recentCommits : repo.recentCommits.slice(0, 3)).map((commit, idx) => (
-                      <div key={idx} className="text-xs pb-2 border-b border-gray-700/50 last:border-0 last:pb-0">
+                      <div key={idx} className="text-xs pb-2 border-b border-white/10/50 last:border-0 last:pb-0">
                         <div className="flex items-start gap-2 mb-1">
-                          <code className="bg-gray-900 px-1.5 py-0.5 rounded font-mono text-gray-400 flex-shrink-0">
+                          <code className="bg-black/40 px-1.5 py-0.5 rounded font-mono text-gray-400 flex-shrink-0">
                             {commit.hash.substring(0, 7)}
                           </code>
                           <div className="flex-1 min-w-0 text-gray-300 break-words">{commit.message}</div>
@@ -956,7 +1142,7 @@
                   {repo.recentCommits.length > 3 && (
                     <button
                       onClick={() => setShowAllCommits(!showAllCommits)}
-                      className="w-full mt-3 px-2 py-1 text-xs bg-gray-700/50 hover:bg-gray-700 rounded text-gray-400 hover:text-gray-300"
+                      className="w-full mt-3 px-2 py-1 text-xs bg-black/30 hover:bg-black/40 rounded text-gray-400 hover:text-gray-300"
                     >
                       {showAllCommits ? '- Show Less' : `+ Show ${repo.recentCommits.length - 3} More`}
                     </button>
@@ -973,8 +1159,8 @@
             </div>
 
             {/* Right Column - Heads Up Panel (1/3 width, sticky) */}
-            <div className="w-80 flex-shrink-0 sticky top-6">
-              <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 space-y-4">
+            <div className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-6">
+              <div className="tron-backdrop hud-frame p-4 space-y-4">
                 {(() => {
                   const headsUpData = parseHeadsUpData(repo.memory?.state);
                   const recentCommits = (repo.recentCommits || []).slice(0, showAllCommits ? 10 : 3);
@@ -982,14 +1168,14 @@
                   return (
                     <>
                       {/* SITREP Title */}
-                      <div className="border-b border-gray-700 pb-2 mb-2">
-                        <h2 className="text-sm font-bold text-white uppercase tracking-wide">SITREP</h2>
+                      <div className="border-b border-ares-500/50 pb-2 mb-2">
+                        <h2 className="text-sm font-bold text-white uppercase tracking-wide tron-glow-text">SITREP</h2>
                       </div>
 
                       {/* Up Next */}
-                      <div className="border-b border-gray-700 pb-3">
+                      <div className="border-b border-white/10/50 pb-3">
                         <div className="flex items-center gap-2 mb-2">
-                          <ChevronRight className="w-4 h-4 text-blue-400" />
+                          <ChevronRight className="w-4 h-4 text-ares-400" />
                           <h3 className="text-xs font-semibold text-gray-400 uppercase">Up Next</h3>
                         </div>
                         {(() => {
@@ -1073,7 +1259,7 @@
                                             console.error('Failed to launch Claude:', err);
                                           }
                                         }}
-                                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 hover:text-blue-400 text-gray-500 transition-opacity"
+                                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 hover:text-ares-400 text-gray-500 transition-all hover:drop-shadow-glow"
                                         title="Launch in Claude"
                                       >
                                         <Rocket className="w-3 h-3" />
@@ -1090,7 +1276,7 @@
                       </div>
 
                       {/* Critical */}
-                      <div className="border-b border-gray-700 pb-3">
+                      <div className="border-b border-white/10 pb-3">
                         <div className="flex items-center gap-2 mb-2">
                           <AlertCircle className="w-4 h-4 text-red-400" />
                           <h3 className="text-xs font-semibold text-gray-400 uppercase">Critical</h3>
@@ -1106,7 +1292,7 @@
                       </div>
 
                       {/* Highest ROI */}
-                      <div className="border-b border-gray-700 pb-3">
+                      <div className="border-b border-white/10 pb-3">
                         <div className="flex items-center gap-2 mb-2">
                           <Zap className="w-4 h-4 text-yellow-400" />
                           <h3 className="text-xs font-semibold text-gray-400 uppercase">Highest ROI</h3>
@@ -1119,7 +1305,7 @@
                       </div>
 
                       {/* Last Done */}
-                      <div className="border-b border-gray-700 pb-3">
+                      <div className="border-b border-white/10 pb-3">
                         <div className="flex items-center gap-2 mb-2">
                           <CheckCircle className="w-4 h-4 text-green-400" />
                           <h3 className="text-xs font-semibold text-gray-400 uppercase">Last Done</h3>
@@ -1130,7 +1316,7 @@
                               <div key={`${commit.hash}-${idx}`} className="text-sm">
                                 <div className="text-gray-300 mb-1">{commit.message}</div>
                                 <div className="text-xs text-gray-500">
-                                  <code className="bg-gray-900 px-1 py-0.5 rounded mr-2">{commit.hash.substring(0, 7)}</code>
+                                  <code className="bg-black/40 px-1 py-0.5 rounded mr-2">{commit.hash.substring(0, 7)}</code>
                                   <RelativeTime date={commit.date} />
                                 </div>
                               </div>
@@ -1151,7 +1337,7 @@
 
                       {/* Memory Files (Collapsible) */}
                       {repo.memory && (
-                        <div className="border-t border-gray-700 pt-3">
+                        <div className="border-t border-white/10 pt-3">
                           <button
                             onClick={() => setHeadsUpMemoryExpanded(!headsUpMemoryExpanded)}
                             className="w-full flex items-center justify-between text-xs font-semibold text-gray-400 uppercase hover:text-gray-300 mb-2"
@@ -1165,7 +1351,7 @@
                           {headsUpMemoryExpanded && (
                             <div className="space-y-2">
                               {repo.memory.state && (
-                                <details open={memoryExpanded.state} onToggle={(e) => setMemoryExpanded({...memoryExpanded, state: e.target.open})} className="bg-gray-700/50 rounded p-2">
+                                <details open={memoryExpanded.state} onToggle={(e) => setMemoryExpanded({...memoryExpanded, state: e.target.open})} className="bg-black/30 rounded p-2">
                                   <summary className="cursor-pointer text-xs font-medium text-gray-300 hover:text-white">STATE.md</summary>
                                   <div className="mt-2 max-h-32 overflow-auto text-xs">
                                     <MarkdownRenderer content={repo.memory.state} />
@@ -1173,7 +1359,7 @@
                                 </details>
                               )}
                               {repo.memory.constraints && (
-                                <details open={memoryExpanded.constraints} onToggle={(e) => setMemoryExpanded({...memoryExpanded, constraints: e.target.open})} className="bg-gray-700/50 rounded p-2">
+                                <details open={memoryExpanded.constraints} onToggle={(e) => setMemoryExpanded({...memoryExpanded, constraints: e.target.open})} className="bg-black/30 rounded p-2">
                                   <summary className="cursor-pointer text-xs font-medium text-gray-300 hover:text-white">CONSTRAINTS.md</summary>
                                   <div className="mt-2 max-h-32 overflow-auto text-xs">
                                     <MarkdownRenderer content={repo.memory.constraints} />
@@ -1199,15 +1385,15 @@
       if (!isOpen) return null;
 
       return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm tron-grid-bg flex items-center justify-center z-50" onClick={onClose}>
+          <div className="tron-backdrop rounded-lg tron-border-heavy p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold mb-4 text-white">Select Repo for Claude</h3>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {repos.map(repo => (
                 <button
                   key={repo.name}
                   onClick={() => onSelect(repo.name)}
-                  className="w-full text-left px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white"
+                  className="w-full text-left px-4 py-2 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 hover:tron-glow-sm transition-all duration-200 rounded text-white border border-white/20/30"
                 >
                   {repo.name}
                 </button>
@@ -1215,7 +1401,7 @@
             </div>
             <button
               onClick={onClose}
-              className="mt-4 w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white"
+              className="mt-4 w-full px-4 py-2 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 hover:tron-glow-sm transition-all duration-200 rounded text-white border border-white/20/30"
             >
               Cancel
             </button>
@@ -1228,8 +1414,8 @@
       const [showRepoModal, setShowRepoModal] = useState(false);
       const [isExpanded, setIsExpanded] = useState(false);
       const priorityColors = {
-        high: 'bg-red-500',
-        medium: 'bg-yellow-500',
+        high: 'bg-red-500 border-ares-500',
+        medium: 'bg-yellow-500 border-yellow-400',
         low: 'bg-gray-500',
       };
 
@@ -1287,12 +1473,12 @@
             repos={repos}
             onSelect={handleLaunchClaude}
           />
-          <div className="flex items-start gap-3 py-2 border-b border-gray-700 last:border-0 group">
+          <div className="flex items-start gap-3 py-2 border-b border-white/10/50 last:border-0 group hover:bg-gray-800/30 transition-colors px-2 -mx-2 rounded">
           <button onClick={handleToggle} className="flex-shrink-0 mt-0.5">
             {todo.completed_at ? (
-              <CheckSquare className="w-5 h-5 text-green-400" />
+              <CheckSquare className="w-5 h-5 text-green-400 tron-glow-sm" />
             ) : (
-              <Square className="w-5 h-5 text-gray-500 hover:text-gray-300" />
+              <Square className="w-5 h-5 text-gray-500 hover:text-ares-400 transition-colors" />
             )}
           </button>
           <div className="flex-1 min-w-0">
@@ -1304,13 +1490,13 @@
                 todo.repo ? (
                   <a
                     href={`#/repo/${todo.repo}`}
-                    className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30 flex-shrink-0"
+                    className="text-xs px-2 py-0.5 bg-ares-500/10 text-ares-400 border border-ares-500/30 rounded hover:bg-ares-500/20 hover:tron-glow-sm transition-all flex-shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {todo.repo}
                   </a>
                 ) : (
-                  <span className="text-xs px-2 py-0.5 bg-gray-700 text-gray-400 rounded flex-shrink-0">global</span>
+                  <span className="text-xs px-2 py-0.5 bg-black/30text-gray-400 rounded flex-shrink-0">global</span>
                 )
               )}
               <div className="flex-1 min-w-0">
@@ -1322,7 +1508,7 @@
                 {(todo.text.length > 150 || todo.text.split('\n').length > 3) && (
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-xs text-blue-400 hover:text-blue-300 mt-1"
+                    className="text-xs text-ares-400 hover:text-ares-300 transition-colors mt-1"
                   >
                     {isExpanded ? 'Show less' : 'Show more...'}
                   </button>
@@ -1382,14 +1568,14 @@
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Add a task..."
-            className="flex-1 min-w-[200px] px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="flex-1 min-w-[200px] px-3 py-2 bg-black/30 border border-white/20 rounded text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-ares-500 focus:border-ares-500 transition-all"
             disabled={adding}
           />
           {!hideRepoSelect && (
             <select
               value={repo || ''}
               onChange={(e) => setRepo(e.target.value || null)}
-              className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+              className="px-3 py-2 bg-black/30 border border-white/20 rounded text-sm text-gray-200 focus:outline-none focus:border-ares-500 focus:border-ares-500 transition-all"
               disabled={adding}
             >
               <option value="">Global</option>
@@ -1403,7 +1589,7 @@
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
-            className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+            className="px-3 py-2 bg-black/30 border border-white/20 rounded text-sm text-gray-200 focus:outline-none focus:border-ares-500 focus:border-ares-500 transition-all"
             disabled={adding}
           >
             <option value="high">High</option>
@@ -1413,7 +1599,7 @@
           <button
             type="submit"
             disabled={adding || !text.trim()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-black/20 border border-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-sm text-ares-400 hover:text-ares-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {adding ? 'Adding...' : 'Add'}
           </button>
@@ -1450,9 +1636,9 @@
       }, [fetchTodos]);
 
       return (
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+        <div className="tron-backdrop rounded-lg tron-border p-4">
           <h2 className="font-semibold mb-4 flex items-center gap-2">
-            <ListIcon className="w-4 h-4 text-purple-400" /> {title}
+            <ListIcon className="w-4 h-4 text-ares-400" /> {title}
           </h2>
           <AddTodoForm
             repos={repos}
@@ -1463,7 +1649,7 @@
           />
           {loading ? (
             <div className="flex items-center gap-2 text-gray-400 py-4">
-              <Loader2 className="w-4 h-4" /> Loading tasks...
+              <Loader2 className="w-4 h-4 text-ares-400 drop-shadow-glow" /> Loading tasks...
             </div>
           ) : todos.length === 0 ? (
             <p className="text-sm text-gray-500 py-4">No tasks yet</p>
@@ -1496,10 +1682,10 @@
       const [showAllCommits, setShowAllCommits] = useState(false);
 
       return (
-        <div className="flex-1 overflow-auto">
-          <div className="p-6">
+        <div className="flex-1 overflow-auto overflow-x-hidden">
+          <div className="p-4 pt-16 lg:p-6 lg:pt-6">
             {error && (
-              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center gap-2 text-red-400">
+              <div className="mb-4 p-3 bg-red-500/10 tron-border rounded-lg flex items-center gap-2 text-red-400 tron-glow-sm">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span className="text-sm flex-1">{error}</span>
                 <button onClick={() => setError(null)} className="text-xs hover:text-red-300">dismiss</button>
@@ -1507,14 +1693,14 @@
             )}
 
             {outputModal && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-gray-800 rounded-lg border border-gray-700 max-w-2xl w-full max-h-[80vh] flex flex-col">
-                  <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm tron-grid-bg flex items-center justify-center z-50 p-4">
+                <div className="tron-backdrop rounded-lg tron-border-heavy max-w-2xl w-full max-h-[80vh] flex flex-col">
+                  <div className="flex items-center justify-between p-4 border-b border-white/10/50">
                     <div className="flex items-center gap-2">
-                      {outputModal.success ? <CheckCircle className="w-5 h-5 text-green-400" /> : <XCircle className="w-5 h-5 text-red-400" />}
+                      {outputModal.success ? <CheckCircle className="w-5 h-5 text-green-400 tron-pulse" /> : <XCircle className="w-5 h-5 text-red-400 tron-glow-sm" />}
                       <span className="font-medium">{outputModal.title}</span>
                     </div>
-                    <button onClick={() => setOutputModal(null)} className="text-gray-400 hover:text-white"><XCircle className="w-5 h-5" /></button>
+                    <button onClick={() => setOutputModal(null)} className="text-gray-400 hover:text-ares-400 transition-colors"><XCircle className="w-5 h-5" /></button>
                   </div>
                   <div className="flex-1 overflow-auto p-4">
                     {outputModal.isMarkdown ? (
@@ -1529,122 +1715,154 @@
 
             {activeTab === 'overview' && (
                 <div>
-                  <h1 className="text-2xl font-bold mb-6">Main Systems</h1>
+                  <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 tron-glow-text">Main Systems</h1>
 
-                  <div className="flex gap-6">
+                  <div className="flex flex-col lg:flex-row gap-6">
                     {/* Left Column: System Diagnostics + TODO + Active Jobs */}
                     <div className="flex-1 space-y-6">
                       {/* System Diagnostics */}
-                      <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+                      <div className="data-card rounded-lg p-4">
                       <h2 className="text-sm font-bold text-white uppercase tracking-wide mb-4">SYSTEM DIAGNOSTICS</h2>
 
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-3 text-sm">
                           {/* AllMind Backend */}
-                          <div className="flex items-center gap-3 py-1">
-                            <Zap className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                            <span className="font-medium text-white min-w-[140px]">AllMind Backend</span>
-                            <StatusBadge status={health ? 'running' : 'error'} />
-                            <span className="text-gray-400 text-xs">Host: {health?.host?.hostname || '—'}</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-1">
+                            <div className="flex items-center gap-2">
+                              <Zap className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                              <span className="font-medium text-white">AllMind Backend</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                              <StatusBadge status={health ? 'running' : 'error'} />
+                              <span className="text-gray-400 text-xs">Host: {health?.host?.hostname || '—'}</span>
+                            </div>
                           </div>
 
                           {/* Chinvex API (child) */}
-                          <div className="flex items-center gap-3 py-1 pl-6">
-                            <Database className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                            <span className="font-medium text-gray-300 min-w-[140px]">Chinvex API</span>
-                            <StatusBadge status={health?.services?.find(s => s.id === 'chinvex')?.status || 'unknown'} />
-                            <span className="text-gray-400 text-xs">Contexts: {contexts.length}</span>
-                            <span className="text-gray-400 text-xs">v{health?.services?.find(s => s.id === 'chinvex')?.details?.version || '—'}</span>
-                            <button
-                              onClick={() => setActiveTab('search')}
-                              className="ml-auto text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 flex items-center gap-1"
-                            >
-                              <SearchIcon className="w-3 h-3" /> Search
-                            </button>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-1 pl-0 sm:pl-6">
+                            <div className="flex items-center gap-2">
+                              <Database className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                              <span className="font-medium text-gray-300">Chinvex API</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                              <StatusBadge status={health?.services?.find(s => s.id === 'chinvex')?.status || 'unknown'} />
+                              <span className="text-gray-400 text-xs whitespace-nowrap">Contexts: {contexts.length}</span>
+                              <span className="text-gray-400 text-xs whitespace-nowrap">v{health?.services?.find(s => s.id === 'chinvex')?.details?.version || '—'}</span>
+                              <button
+                                onClick={() => setActiveTab('search')}
+                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 flex items-center gap-1 transition-all whitespace-nowrap"
+                              >
+                                <SearchIcon className="w-3 h-3" /> Search
+                              </button>
+                            </div>
                           </div>
 
                           {/* Chinvex Gateway (child) */}
-                          <div className="flex items-center gap-3 py-1 pl-6">
-                            <Server className="w-4 h-4 text-green-400 flex-shrink-0" />
-                            <span className="font-medium text-gray-300 min-w-[140px]">Chinvex Gateway</span>
-                            <StatusBadge status={services.find(svc => svc.name === 'chinvex-gateway')?.status || 'unknown'} />
-                            {(() => {
-                              const svc = services.find(s => s.name === 'chinvex-gateway');
-                              return svc?.uptime ? <span className="text-gray-400 text-xs">Up: {formatUptime(svc.uptime)}</span> : null;
-                            })()}
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-1 pl-0 sm:pl-6">
+                            <div className="flex items-center gap-2">
+                              <Server className="w-4 h-4 text-green-400 flex-shrink-0" />
+                              <span className="font-medium text-gray-300">Chinvex Gateway</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-gateway')?.status || 'unknown'} />
+                              {(() => {
+                                const svc = services.find(s => s.name === 'chinvex-gateway');
+                                return svc?.uptime ? <span className="text-gray-400 text-xs whitespace-nowrap">Up: {formatUptime(svc.uptime)}</span> : null;
+                              })()}
+                            </div>
                           </div>
 
                           {/* Cloudflare Tunnel (child) */}
-                          <div className="flex items-center gap-3 py-1 pl-6">
-                            <Activity className="w-4 h-4 text-orange-400 flex-shrink-0" />
-                            <span className="font-medium text-gray-300 min-w-[140px]">Cloudflare Tunnel</span>
-                            <StatusBadge status={services.find(svc => svc.name === 'chinvex-tunnel')?.status || 'unknown'} />
-                            {(() => {
-                              const svc = services.find(s => s.name === 'chinvex-tunnel');
-                              return svc?.uptime ? <span className="text-gray-400 text-xs">Up: {formatUptime(svc.uptime)}</span> : null;
-                            })()}
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-1 pl-0 sm:pl-6">
+                            <div className="flex items-center gap-2">
+                              <Activity className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                              <span className="font-medium text-gray-300">Cloudflare Tunnel</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-tunnel')?.status || 'unknown'} />
+                              {(() => {
+                                const svc = services.find(s => s.name === 'chinvex-tunnel');
+                                return svc?.uptime ? <span className="text-gray-400 text-xs whitespace-nowrap">Up: {formatUptime(svc.uptime)}</span> : null;
+                              })()}
+                            </div>
                           </div>
 
                           {/* Chinvex Sync (child) */}
-                          <div className="flex items-center gap-3 py-1 pl-6">
-                            <Server className="w-4 h-4 text-green-400 flex-shrink-0" />
-                            <span className="font-medium text-gray-300 min-w-[140px]">Chinvex Sync</span>
-                            <StatusBadge status={services.find(svc => svc.name === 'chinvex-sync')?.status || 'unknown'} />
-                            {(() => {
-                              const svc = services.find(s => s.name === 'chinvex-sync');
-                              return svc?.uptime ? <span className="text-gray-400 text-xs">Up: {formatUptime(svc.uptime)}</span> : null;
-                            })()}
-                            <button
-                              onClick={() => setActiveTab('services')}
-                              className="ml-auto text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300"
-                            >
-                              Manage All
-                            </button>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-1 pl-0 sm:pl-6">
+                            <div className="flex items-center gap-2">
+                              <Server className="w-4 h-4 text-green-400 flex-shrink-0" />
+                              <span className="font-medium text-gray-300">Chinvex Sync</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-sync')?.status || 'unknown'} />
+                              {(() => {
+                                const svc = services.find(s => s.name === 'chinvex-sync');
+                                return svc?.uptime ? <span className="text-gray-400 text-xs whitespace-nowrap">Up: {formatUptime(svc.uptime)}</span> : null;
+                              })()}
+                              <button
+                                onClick={() => setActiveTab('services')}
+                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 whitespace-nowrap"
+                              >
+                                Manage All
+                              </button>
+                            </div>
                           </div>
 
                           {/* Divider */}
-                          <div className="border-t border-gray-700 my-3"></div>
+                          <div className="border-t border-white/10 my-3"></div>
 
                           {/* Repositories */}
-                          <div className="flex items-center gap-3 py-1">
-                            <GitBranch className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                            <span className="font-medium text-white min-w-[140px]">Repositories</span>
-                            <span className="text-gray-400 text-xs">{repos.length} total</span>
-                            <span className="text-gray-400 text-xs">{repos.filter(r => r.git?.dirty).length} dirty</span>
-                            <span className="text-gray-400 text-xs">{repos.filter(r => r.tools?.memory).length} with memory</span>
-                            <button
-                              onClick={() => setActiveTab('repos')}
-                              className="ml-auto text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300"
-                            >
-                              View All
-                            </button>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-1">
+                            <div className="flex items-center gap-2">
+                              <GitBranch className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                              <span className="font-medium text-white">Repositories</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                              <span className="text-gray-400 text-xs whitespace-nowrap">{repos.length} total</span>
+                              <span className="text-gray-400 text-xs whitespace-nowrap">{repos.filter(r => r.git?.dirty).length} dirty</span>
+                              <span className="text-gray-400 text-xs whitespace-nowrap">{repos.filter(r => r.tools?.memory).length} with memory</span>
+                              <button
+                                onClick={() => setActiveTab('repos')}
+                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 whitespace-nowrap"
+                              >
+                                View All
+                              </button>
+                            </div>
                           </div>
 
                           {/* Strap */}
-                          <div className="flex items-center gap-3 py-1">
-                            <Terminal className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-                            <span className="font-medium text-white min-w-[140px]">Strap</span>
-                            <span className="text-gray-400 text-xs">{shims.shims?.length || 0} shims</span>
-                            <span className="text-gray-400 text-xs">{shims.collisions?.length || 0} collisions</span>
-                            <span className="text-gray-400 text-xs">{shims.orphans?.length || 0} orphans</span>
-                            <button
-                              onClick={() => { runDoctor(); setActiveTab('strap'); }}
-                              className="ml-auto text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 flex items-center gap-1"
-                            >
-                              <Activity className="w-3 h-3" /> Doctor
-                            </button>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-1">
+                            <div className="flex items-center gap-2">
+                              <Terminal className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                              <span className="font-medium text-white">Strap</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                              <span className="text-gray-400 text-xs whitespace-nowrap">{shims.shims?.length || 0} shims</span>
+                              <span className="text-gray-400 text-xs whitespace-nowrap">{shims.collisions?.length || 0} collisions</span>
+                              <span className="text-gray-400 text-xs whitespace-nowrap">{shims.orphans?.length || 0} orphans</span>
+                              <button
+                                onClick={() => { runDoctor(); setActiveTab('strap'); }}
+                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 flex items-center gap-1 whitespace-nowrap"
+                              >
+                                <Activity className="w-3 h-3" /> Doctor
+                              </button>
+                            </div>
                           </div>
 
                           {/* Chinvex Contexts */}
-                          <div className="flex items-center gap-3 py-1">
-                            <Database className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                            <span className="font-medium text-white min-w-[140px]">Chinvex Contexts</span>
-                            <span className="text-gray-400 text-xs">{contexts.length} contexts</span>
-                            <button
-                              onClick={() => setActiveTab('contexts')}
-                              className="ml-auto text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300"
-                            >
-                              View All
-                            </button>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-1">
+                            <div className="flex items-center gap-2">
+                              <Database className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                              <span className="font-medium text-white">Chinvex Contexts</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                              <span className="text-gray-400 text-xs whitespace-nowrap">{contexts.length} contexts</span>
+                              <button
+                                onClick={() => setActiveTab('contexts')}
+                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 whitespace-nowrap"
+                              >
+                                View All
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1653,7 +1871,7 @@
                       <TodoPanel repos={repos} api={api} title="TODO" onUpdate={onRefresh} />
 
                       {/* Active Jobs Panel */}
-                      <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+                      <div className="tron-backdrop rounded-lg tron-border p-4">
                         <h2 className="font-semibold mb-4 flex items-center gap-2">
                           <Activity className="w-4 h-4 text-green-400" /> ACTIVE JOBS
                         </h2>
@@ -1666,7 +1884,7 @@
 
                     {/* Right Column: SITREP */}
                     <div className="flex-1">
-                      <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 space-y-4">
+                      <div className="tron-backdrop hud-frame p-4 space-y-4">
                         {(() => {
                           // Aggregate data from all repos
                           const priorityOrder = { high: 1, medium: 2, low: 3 };
@@ -1711,12 +1929,12 @@
                           return (
                             <>
                               {/* SITREP Title */}
-                              <div className="border-b border-gray-700 pb-2 mb-2">
-                                <h2 className="text-sm font-bold text-white uppercase tracking-wide">SITREP</h2>
+                              <div className="border-b border-ares-500/50 pb-2 mb-2">
+                                <h2 className="text-sm font-bold text-white uppercase tracking-wide tron-glow-text">SITREP</h2>
                               </div>
 
                               {/* Up Next */}
-                              <div className="border-b border-gray-700 pb-3">
+                              <div className="border-b border-white/10 pb-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <ChevronRight className="w-4 h-4 text-blue-400" />
                                   <h3 className="text-xs font-semibold text-gray-400 uppercase">Up Next</h3>
@@ -1778,7 +1996,7 @@
                               </div>
 
                               {/* Critical */}
-                              <div className="border-b border-gray-700 pb-3">
+                              <div className="border-b border-white/10 pb-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <AlertCircle className="w-4 h-4 text-red-400" />
                                   <h3 className="text-xs font-semibold text-gray-400 uppercase">Critical</h3>
@@ -1806,7 +2024,7 @@
                               </div>
 
                               {/* Highest ROI */}
-                              <div className="border-b border-gray-700 pb-3">
+                              <div className="border-b border-white/10 pb-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Zap className="w-4 h-4 text-yellow-400" />
                                   <h3 className="text-xs font-semibold text-gray-400 uppercase">Highest ROI</h3>
@@ -1879,7 +2097,7 @@
                                           >
                                             {commit.repo}
                                           </a>
-                                          <code className="bg-gray-900 px-1 py-0.5 rounded">{commit.hash.substring(0, 7)}</code>
+                                          <code className="bg-black/40 px-1 py-0.5 rounded">{commit.hash.substring(0, 7)}</code>
                                           <RelativeTime date={commit.date} />
                                         </div>
                                       </div>
@@ -1908,15 +2126,15 @@
 
               {activeTab === 'contexts' && (
                 <div>
-                  <h1 className="text-2xl font-bold mb-6">Chinvex Contexts</h1>
-                  <div className="bg-gray-800 rounded-lg border border-gray-700">
-                    {loading ? <div className="p-8 flex items-center justify-center gap-2 text-gray-400"><Loader2 className="w-5 h-5" /> Loading...</div>
+                  <h1 className="text-2xl font-bold mb-6 tron-glow-text">Chinvex Contexts</h1>
+                  <div className="tron-backdrop rounded-lg tron-border">
+                    {loading ? <div className="p-8 flex items-center justify-center gap-2 text-gray-400"><Loader2 className="w-5 h-5 text-ares-400 drop-shadow-glow" /> Loading...</div>
                       : contexts.length === 0 ? <div className="p-8 text-center text-gray-500">No contexts found.</div>
-                      : <div className="divide-y divide-gray-700">
+                      : <div className="divide-y divide-gray-700/50">
                           {contexts.map(ctx => {
                             const isStale = ctx.updated_at && (new Date() - new Date(ctx.updated_at)) > 7 * 24 * 60 * 60 * 1000;
                             return (
-                              <div key={ctx.name} className="flex items-center gap-3 p-3 hover:bg-gray-800/50 cursor-pointer" onClick={() => { setSearchContext(ctx.name); setActiveTab('search'); }}>
+                              <div key={ctx.name} className="flex items-center gap-3 p-3 hover:bg-gray-800/50 hover:tron-glow-sm transition-all cursor-pointer" onClick={() => { setSearchContext(ctx.name); setActiveTab('search'); }}>
                                 <Database className="w-4 h-4 text-gray-500" />
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2"><span className="font-medium text-white">{ctx.name}</span><StatusBadge status={isStale ? 'stale' : 'ok'} /></div>
@@ -1934,15 +2152,15 @@
 
               {activeTab === 'search' && (
                 <div>
-                  <h1 className="text-2xl font-bold mb-6">Search</h1>
-                  <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+                  <h1 className="text-2xl font-bold mb-6 tron-glow-text">Search</h1>
+                  <div className="tron-backdrop rounded-lg tron-border p-4">
                     <div className="flex gap-3 mb-4">
-                      <select value={searchContext} onChange={(e) => setSearchContext(e.target.value)} className="bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm">
+                      <select value={searchContext} onChange={(e) => setSearchContext(e.target.value)} className="bg-black/30 border border-white/20 rounded px-3 py-2 text-sm">
                         <option value="all">All contexts</option>
                         {contexts.map(ctx => <option key={ctx.name} value={ctx.name}>{ctx.name}</option>)}
                       </select>
-                      <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && doSearch()} placeholder="Search query..." className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" />
-                      <button onClick={doSearch} disabled={!searchQuery.trim() || searching} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm disabled:opacity-50 flex items-center gap-2">
+                      <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && doSearch()} placeholder="Search query..." className="flex-1 bg-black/30 border border-white/20 rounded px-3 py-2 text-sm" />
+                      <button onClick={doSearch} disabled={!searchQuery.trim() || searching} className="px-4 py-2 bg-ares-600 hover:bg-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-sm disabled:opacity-50 flex items-center gap-2">
                         {searching ? <Loader2 className="w-4 h-4" /> : <SearchIcon className="w-4 h-4" />} Search
                       </button>
                     </div>
@@ -1950,7 +2168,7 @@
                       <div className="space-y-3">
                         <div className="text-sm text-gray-400">{searchResults.total_results} results for "{searchResults.query}"{searchResults.contexts_searched && ` across ${searchResults.contexts_searched.length} contexts`}</div>
                         {searchResults.results?.map((r, i) => (
-                          <div key={i} className="bg-gray-700/50 rounded p-3 border border-gray-600">
+                          <div key={i} className="bg-black/30 rounded p-3 border border-white/20">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                               <span className="text-xs bg-gray-600 px-2 py-0.5 rounded">{r.source_type || 'unknown'}</span>
                               {r.context && <span className="text-xs bg-blue-600/30 text-blue-400 px-2 py-0.5 rounded">{r.context}</span>}
@@ -1972,8 +2190,8 @@
                     <h1 className="text-2xl font-bold">Repositories</h1>
                     <div className="text-sm text-gray-400">{repos.length} repos</div>
                   </div>
-                  <div className="bg-gray-800 rounded-lg border border-gray-700">
-                    {loading ? <div className="p-8 flex items-center justify-center gap-2 text-gray-400"><Loader2 className="w-5 h-5" /> Scanning...</div>
+                  <div className="tron-backdrop rounded-lg tron-border">
+                    {loading ? <div className="p-8 flex items-center justify-center gap-2 text-gray-400"><Loader2 className="w-5 h-5 text-ares-400 drop-shadow-glow" /> Scanning...</div>
                       : repos.length === 0 ? <div className="p-8 text-center text-gray-500">No repos found.</div>
                       : repos.map(repo => <RepoRow key={repo.name} repo={repo} onAction={handleRepoAction} />)}
                   </div>
@@ -1982,10 +2200,10 @@
 
               {activeTab === 'services' && (
                 <div>
-                  <h1 className="text-2xl font-bold mb-6">Services</h1>
+                  <h1 className="text-2xl font-bold mb-6 tron-glow-text">Services</h1>
                   <div className="space-y-3">
-                    {loading ? <div className="p-8 flex items-center justify-center gap-2 text-gray-400"><Loader2 className="w-5 h-5" /> Loading...</div>
-                      : services.length === 0 ? <div className="p-8 text-center text-gray-500 bg-gray-800 rounded-lg border border-gray-700">No services found.</div>
+                    {loading ? <div className="p-8 flex items-center justify-center gap-2 text-gray-400"><Loader2 className="w-5 h-5 text-ares-400 drop-shadow-glow" /> Loading...</div>
+                      : services.length === 0 ? <div className="p-8 text-center text-gray-500 tron-backdrop rounded-lg tron-border">No services found.</div>
                       : services.map(service => <ServiceRow key={service.id} service={service} onAction={handleServiceAction} actionLoading={actionLoading} />)}
                   </div>
                 </div>
@@ -1994,24 +2212,24 @@
               {activeTab === 'strap' && (
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold">Strap</h1>
-                    <button onClick={runDoctor} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-sm flex items-center gap-2"><Activity className="w-4 h-4" /> Run Doctor</button>
+                    <h1 className="text-2xl font-bold tron-glow-text">Strap</h1>
+                    <button onClick={runDoctor} className="px-3 py-1.5 bg-ares-600 hover:bg-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-sm flex items-center gap-2"><Activity className="w-4 h-4" /> Run Doctor</button>
                   </div>
                   {doctor && (
-                    <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 mb-6">
+                    <div className="tron-backdrop rounded-lg tron-border p-4 mb-6">
                       <h2 className="font-semibold mb-3 flex items-center gap-2"><Activity className="w-4 h-4" /> Doctor Results <span className="text-sm font-normal text-gray-400">{doctor.summary?.passed}/{doctor.summary?.total} passed</span></h2>
                       <div className="space-y-1">{doctor.checks?.map((check, i) => <DoctorCheck key={i} check={check} />)}</div>
                     </div>
                   )}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+                    <div className="tron-backdrop rounded-lg tron-border p-4">
                       <h2 className="font-semibold mb-3 flex items-center gap-2"><Terminal className="w-4 h-4" /> Shims ({shims.shims?.length || 0})</h2>
                       <div className="max-h-96 overflow-auto space-y-1">
                         {shims.shims?.length === 0 ? <p className="text-gray-500 text-sm">No shims found</p> : shims.shims?.map((shim, i) => <ShimRow key={i} shim={shim} />)}
                       </div>
                     </div>
                     <div className="space-y-6">
-                      <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+                      <div className="tron-backdrop rounded-lg tron-border p-4">
                         <h2 className="font-semibold mb-3 flex items-center gap-2"><AlertCircle className="w-4 h-4 text-yellow-400" /> Collisions ({shims.collisions?.length || 0})</h2>
                         {shims.collisions?.length === 0 ? <p className="text-gray-500 text-sm">No collisions</p>
                           : <div className="space-y-2">{shims.collisions?.map((c, i) => (
@@ -2022,7 +2240,7 @@
                               </div>
                             ))}</div>}
                       </div>
-                      <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+                      <div className="tron-backdrop rounded-lg tron-border p-4">
                         <h2 className="font-semibold mb-3 flex items-center gap-2"><FileText className="w-4 h-4 text-orange-400" /> Orphans ({shims.orphans?.length || 0})</h2>
                         {shims.orphans?.length === 0 ? <p className="text-gray-500 text-sm">No orphans</p>
                           : <div className="flex flex-wrap gap-2">{shims.orphans?.map((name, i) => <span key={i} className="text-xs font-mono px-2 py-1 bg-orange-500/20 text-orange-400 rounded">{name}</span>)}</div>}
@@ -2055,6 +2273,7 @@
       const [searching, setSearching] = useState(false);
       const [outputModal, setOutputModal] = useState(null);
       const [todos, setTodos] = useState([]);
+      const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
       const api = useCallback(async (path, options = {}) => {
         const controller = new AbortController();
@@ -2139,7 +2358,26 @@
 
       return (
         <HashRouter>
-          <div className="min-h-screen bg-gray-900 text-white flex">
+          <div className="page-wrapper min-h-screen text-white flex overflow-x-hidden" style={{background: '#05080a'}}>
+            {/* Mobile header bar */}
+            <div className="fixed top-0 left-0 right-0 h-14 bg-black/60 backdrop-blur-sm border-b border-ares-500/30 z-30 lg:hidden flex items-center px-4 gap-3">
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-2 hover:bg-black/40 rounded transition-all"
+                aria-label="Open menu"
+              >
+                <svg className="w-5 h-5 text-ares-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-ares-500/20 border border-ares-500 rounded flex items-center justify-center">
+                  <span className="text-ares-400 text-xs font-bold">A</span>
+                </div>
+                <span className="font-bold text-white text-sm">ALLMIND</span>
+              </div>
+            </div>
+
             <Sidebar
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -2149,6 +2387,8 @@
               lastRefresh={lastRefresh}
               onRefresh={refresh}
               api={api}
+              mobileMenuOpen={mobileMenuOpen}
+              setMobileMenuOpen={setMobileMenuOpen}
             />
             <Switch>
               <Route path="/repo/:name">
