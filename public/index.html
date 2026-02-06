@@ -68,6 +68,7 @@
       fileText: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8",
       chevronRight: "M9 18l6-6-6-6",
       chevronDown: "M6 9l6 6 6-6",
+      gitCommit: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM2 12h6M16 12h6",
     };
 
     const Icon = ({ name, className = "w-4 h-4" }) => (
@@ -97,6 +98,7 @@
     const FileText = ({ className }) => <Icon name="fileText" className={className} />;
     const ChevronRight = ({ className }) => <Icon name="chevronRight" className={className} />;
     const ChevronDown = ({ className }) => <Icon name="chevronDown" className={className} />;
+    const GitCommit = ({ className }) => <Icon name="gitCommit" className={className} />;
 
     // Markdown Renderer Component
     const MarkdownRenderer = ({ content, className = "" }) => {
@@ -211,9 +213,19 @@
           <div className="flex items-center gap-3 p-3 hover:bg-gray-800/50 cursor-pointer" onClick={() => setExpanded(!expanded)}>
             {expanded ? <ChevronDown className="w-4 h-4 text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-white">{repo.name}</span>
                 <StatusBadge status={repo.git?.status || 'unknown'} />
+                {repo.chinvexStatus && repo.chinvexStatus.status !== 'unknown' && (
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded border ${
+                    repo.chinvexStatus.status === 'ingesting' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                    repo.chinvexStatus.status === 'idle' ? 'bg-gray-500/20 text-gray-400 border-gray-500/30' :
+                    repo.chinvexStatus.status === 'stale' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                    'bg-red-500/20 text-red-400 border-red-500/30'
+                  }`} title={repo.chinvexStatus.message || ''}>
+                    CHINVEX: {repo.chinvexStatus.status.toUpperCase()}
+                  </span>
+                )}
                 <SetupBadge setup={repo.setup} />
                 {repo.git?.ahead > 0 && <span className="text-xs text-green-400">↑{repo.git.ahead}</span>}
                 {repo.git?.behind > 0 && <span className="text-xs text-yellow-400">↓{repo.git.behind}</span>}
@@ -323,9 +335,10 @@
     );
 
     // Sidebar Component
-    const Sidebar = ({ activeTab, setActiveTab, repos, services, loading, lastRefresh, onRefresh }) => {
+    const Sidebar = ({ activeTab, setActiveTab, repos, services, loading, lastRefresh, onRefresh, api }) => {
       const history = useHistory();
       const location = useLocation();
+      const [restarting, setRestarting] = useState(false);
 
       const navItems = [
         { id: 'overview', label: 'Overview', icon: Activity },
@@ -360,6 +373,22 @@
         return 'bg-gray-500';
       };
 
+      const handleRestart = async () => {
+        if (!confirm('Restart AllMind server? This will briefly interrupt the dashboard.')) return;
+        setRestarting(true);
+        try {
+          await api('/api/services/pm2-allmind/restart', { method: 'POST' });
+          // Wait a moment for the restart to complete
+          setTimeout(() => {
+            setRestarting(false);
+            onRefresh();
+          }, 2000);
+        } catch (err) {
+          console.error('Restart failed:', err);
+          setRestarting(false);
+        }
+      };
+
       return (
         <div className="w-56 bg-gray-800 border-r border-gray-700 flex flex-col">
           <div className="p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-700/50" onClick={handleLogoClick}>
@@ -390,10 +419,13 @@
               </div>
             )}
           </nav>
-          <div className="p-3 border-t border-gray-700 text-xs text-gray-500">
+          <div className="p-3 border-t border-gray-700 text-xs text-gray-500 space-y-2">
             <div className="flex items-center justify-between"><span>Last refresh</span>{lastRefresh && <RelativeTime date={lastRefresh} />}</div>
-            <button onClick={onRefresh} disabled={loading} className="mt-2 w-full flex items-center justify-center gap-1 py-1.5 bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50">
+            <button onClick={onRefresh} disabled={loading} className="w-full flex items-center justify-center gap-1 py-1.5 bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50">
               <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Refresh
+            </button>
+            <button onClick={handleRestart} disabled={restarting || loading} className="w-full flex items-center justify-center gap-1 py-1.5 bg-orange-600 hover:bg-orange-500 rounded disabled:opacity-50 text-white">
+              <RotateCcw className={`w-3 h-3 ${restarting ? 'animate-spin' : ''}`} /> Restart Server
             </button>
           </div>
         </div>
@@ -407,6 +439,12 @@
       const [repo, setRepo] = useState(null);
       const [loading, setLoading] = useState(true);
       const [memoryExpanded, setMemoryExpanded] = useState({ state: false, constraints: false });
+      const [editModalOpen, setEditModalOpen] = useState(false);
+      const [editForm, setEditForm] = useState({ status: '', depth: '', tags: '' });
+      const [saving, setSaving] = useState(false);
+      const [depthWarningOpen, setDepthWarningOpen] = useState(false);
+      const [originalDepth, setOriginalDepth] = useState('');
+      const [showAllCommits, setShowAllCommits] = useState(false);
 
       const fetchRepo = useCallback(async () => {
         setLoading(true);
@@ -421,6 +459,59 @@
       }, [name, api, setError]);
 
       useEffect(() => { fetchRepo(); }, [fetchRepo]);
+
+      const openEditModal = () => {
+        const currentDepth = repo.strapEntry?.chinvexDepth !== undefined ? repo.strapEntry.chinvexDepth : 'full';
+        const currentStatus = repo.strapEntry?.status || 'active';
+        setEditForm({
+          status: currentStatus,
+          depth: currentDepth,
+          tags: repo.strapEntry?.tags ? repo.strapEntry.tags.join(', ') : '',
+        });
+        setOriginalDepth(currentDepth);
+        setEditModalOpen(true);
+      };
+
+      const handleSaveConfig = async () => {
+        // Check if depth is changing
+        if (editForm.depth !== originalDepth && editForm.depth !== '') {
+          setDepthWarningOpen(true);
+          return;
+        }
+
+        await performSave();
+      };
+
+      const performSave = async () => {
+        setSaving(true);
+        try {
+          const payload = {};
+          if (editForm.status) payload.status = editForm.status;
+          if (editForm.depth !== '') payload.depth = editForm.depth;
+          if (editForm.tags !== undefined) {
+            // Convert comma-separated string to array
+            payload.tags = editForm.tags.split(',').map(t => t.trim()).filter(Boolean);
+          }
+
+          const result = await api(`/api/repos/${encodeURIComponent(name)}/configure`, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+          });
+
+          if (result.status === 'success') {
+            setEditModalOpen(false);
+            setDepthWarningOpen(false);
+            fetchRepo();
+            onRefresh();
+          } else {
+            setError(`Configuration update: ${result.status}`);
+          }
+        } catch (err) {
+          setError(`Failed to update configuration: ${err.message}`);
+        } finally {
+          setSaving(false);
+        }
+      };
 
       const handleAction = async (action) => {
         try {
@@ -441,6 +532,12 @@
             case 'git-pull':
               const pullResult = await api(`/api/repos/${encodeURIComponent(name)}/git`, { method: 'POST', body: JSON.stringify({ args: ['pull'] }) });
               setOutputModal({ title: `Git Pull: ${name}`, content: pullResult.stdout || pullResult.stderr || 'No output', success: pullResult.exitCode === 0 });
+              fetchRepo();
+              onRefresh();
+              break;
+            case 'git-push':
+              const pushResult = await api(`/api/repos/${encodeURIComponent(name)}/git`, { method: 'POST', body: JSON.stringify({ args: ['push'] }) });
+              setOutputModal({ title: `Git Push: ${name}`, content: pushResult.stdout || pushResult.stderr || 'No output', success: pushResult.exitCode === 0 });
               fetchRepo();
               onRefresh();
               break;
@@ -478,6 +575,93 @@
 
       return (
         <div className="p-6">
+          {/* Depth Change Warning Modal */}
+          {depthWarningOpen && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4">
+              <div className="bg-gray-800 rounded-lg border border-red-500/50 max-w-lg w-full">
+                <div className="flex items-center gap-2 p-4 border-b border-gray-700 bg-red-500/10">
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                  <h2 className="font-semibold text-red-400">Warning: Index Rebuild Required</h2>
+                </div>
+                <div className="p-4 space-y-3">
+                  <p className="text-sm text-gray-300">
+                    Changing ingestion depth requires rebuilding the index.
+                  </p>
+                  <div className="bg-gray-700/50 rounded p-3 text-sm text-gray-300 space-y-1">
+                    <p className="font-medium">This will:</p>
+                    <ul className="list-disc list-inside space-y-1 text-gray-400">
+                      <li>Delete ALL indexed data for context "{repo.strapEntry?.chinvexContext || name}"</li>
+                      <li>Re-ingest ALL repos, chats, and sessions from scratch</li>
+                      <li>Take several minutes depending on data size</li>
+                    </ul>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Original depth: <span className="text-gray-300">{originalDepth || 'not set'}</span> → New depth: <span className="text-gray-300">{editForm.depth}</span>
+                  </p>
+                </div>
+                <div className="flex gap-2 p-4 border-t border-gray-700">
+                  <button
+                    onClick={() => { setDepthWarningOpen(false); setSaving(false); }}
+                    className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={performSave}
+                    disabled={saving}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-500 rounded text-white disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {saving ? <><Loader2 className="w-4 h-4" /> Saving...</> : 'Continue & Rebuild'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Edit Configuration Modal */}
+          {editModalOpen && !depthWarningOpen && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-gray-800 rounded-lg border border-gray-700 max-w-md w-full">
+                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                  <h2 className="font-semibold">Edit Configuration</h2>
+                  <button onClick={() => setEditModalOpen(false)} className="text-gray-400 hover:text-white">
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
+                    <select value={editForm.status} onChange={(e) => setEditForm({...editForm, status: e.target.value})} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm">
+                      <option value="active">Active</option>
+                      <option value="stable">Stable</option>
+                      <option value="archived">Archived</option>
+                      <option value="deprecated">Deprecated</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Chinvex Depth</label>
+                    <select value={editForm.depth} onChange={(e) => setEditForm({...editForm, depth: e.target.value})} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm">
+                      <option value="light">Light</option>
+                      <option value="full">Full</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Tags (comma-separated)</label>
+                    <input type="text" value={editForm.tags} onChange={(e) => setEditForm({...editForm, tags: e.target.value})} placeholder="tag1, tag2, tag3" className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" />
+                  </div>
+                </div>
+                <div className="flex gap-2 p-4 border-t border-gray-700">
+                  <button onClick={() => setEditModalOpen(false)} className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300">
+                    Cancel
+                  </button>
+                  <button onClick={handleSaveConfig} disabled={saving} className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white disabled:opacity-50 flex items-center justify-center gap-2">
+                    {saving ? <><Loader2 className="w-4 h-4" /> Saving...</> : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
             <button onClick={() => history.push('/')} className="hover:text-white">Home</button>
@@ -487,132 +671,249 @@
             <span className="text-white">{repo.name}</span>
           </div>
 
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-3">{repo.name}</h1>
-            <div className="flex items-center gap-2 flex-wrap mb-3">
-              <StatusBadge status={repo.git?.status || 'unknown'} />
-              <SetupBadge setup={repo.setup} />
-              {repo.git?.ahead > 0 && <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded border border-green-500/30">↑{repo.git.ahead} ahead</span>}
-              {repo.git?.behind > 0 && <span className="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">↓{repo.git.behind} behind</span>}
-            </div>
-            <div className="text-sm text-gray-400 flex gap-3">
-              {repo.tools?.claudeProject && <span className="text-blue-400">claude</span>}
-              {repo.tools?.venv && <span className="text-green-400">venv</span>}
-              {repo.tools?.node && <span className="text-yellow-400">node</span>}
-              {repo.tools?.memory && <span className="text-purple-400">memory</span>}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Git Status Card */}
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
-              <h2 className="font-semibold mb-3 flex items-center gap-2"><GitBranch className="w-4 h-4" /> Git Status</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-400">Branch</span><span className="text-gray-300">{repo.git?.branch || 'unknown'}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Status</span><StatusBadge status={repo.git?.status || 'unknown'} /></div>
-                {repo.git?.ahead > 0 && <div className="flex justify-between"><span className="text-gray-400">Ahead</span><span className="text-green-400">{repo.git.ahead} commits</span></div>}
-                {repo.git?.behind > 0 && <div className="flex justify-between"><span className="text-gray-400">Behind</span><span className="text-yellow-400">{repo.git.behind} commits</span></div>}
-                {repo.git?.lastCommit && (
-                  <>
-                    <div className="flex justify-between"><span className="text-gray-400">Last Commit</span><RelativeTime date={repo.git.lastCommit.date} /></div>
-                    <div className="text-xs text-gray-500 mt-2 font-mono truncate" title={repo.git.lastCommit.message}>{repo.git.lastCommit.message}</div>
-                  </>
+          {/* Panel 1 - Repository Info */}
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6" style={{width: '1000px', maxWidth: '100%'}}>
+            {/* Header with badges and Edit button */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold">{repo.name}</h1>
+                <StatusBadge status={repo.git?.status || 'unknown'} />
+                {repo.chinvexStatus && repo.chinvexStatus.status !== 'unknown' && (
+                  <span className={`px-2 py-0.5 text-xs font-medium rounded border ${
+                    repo.chinvexStatus.status === 'ingesting' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                    repo.chinvexStatus.status === 'idle' ? 'bg-gray-500/20 text-gray-400 border-gray-500/30' :
+                    repo.chinvexStatus.status === 'stale' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                    'bg-red-500/20 text-red-400 border-red-500/30'
+                  }`} title={repo.chinvexStatus.message || ''}>
+                    CHINVEX: {repo.chinvexStatus.status.toUpperCase()}
+                  </span>
                 )}
+                <SetupBadge setup={repo.setup} />
+                {repo.git?.ahead > 0 && <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded border border-green-500/30">↑{repo.git.ahead}</span>}
+                {repo.git?.behind > 0 && <span className="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30">↓{repo.git.behind}</span>}
               </div>
-            </div>
-
-            {/* Setup Card */}
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
-              <h2 className="font-semibold mb-3">Setup Status</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-400">Result</span><SetupBadge setup={repo.setup} /></div>
-                {repo.setup?.last_attempt && <div className="flex justify-between"><span className="text-gray-400">Last Attempt</span><RelativeTime date={repo.setup.last_attempt} /></div>}
-                {!repo.setup?.last_attempt && <div className="flex justify-between"><span className="text-gray-400">Last Attempt</span><span className="text-gray-500">Never</span></div>}
-                {repo.setup?.result === 'failed' && repo.setup?.error && (
-                  <div className="text-xs text-red-400 mt-2 p-2 bg-red-500/10 rounded">{repo.setup.error}</div>
-                )}
-              </div>
-            </div>
-
-            {/* Recent Commits */}
-            {repo.git?.recentCommits && repo.git.recentCommits.length > 0 && (
-              <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
-                <h2 className="font-semibold mb-3">Recent Commits</h2>
-                <div className="space-y-2">
-                  {repo.git.recentCommits.slice(0, 5).map((commit, i) => (
-                    <div key={i} className="text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-gray-500">{commit.hash?.substring(0, 7)}</span>
-                        <RelativeTime date={commit.date} />
-                      </div>
-                      <div className="text-gray-300 text-xs mt-0.5 truncate">{commit.message}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Memory Files */}
-            {repo.memory && (
-              <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
-                <h2 className="font-semibold mb-3 flex items-center gap-2"><FileText className="w-4 h-4 text-purple-400" /> Memory Files</h2>
-                <div className="space-y-3">
-                  {repo.memory.state && (
-                    <details open={memoryExpanded.state} onToggle={(e) => setMemoryExpanded({...memoryExpanded, state: e.target.open})} className="bg-gray-700/50 rounded p-2">
-                      <summary className="cursor-pointer text-sm font-medium text-gray-300 hover:text-white">STATE.md</summary>
-                      <div className="mt-2 max-h-64 overflow-auto">
-                        <MarkdownRenderer content={repo.memory.state} />
-                      </div>
-                    </details>
-                  )}
-                  {repo.memory.constraints && (
-                    <details open={memoryExpanded.constraints} onToggle={(e) => setMemoryExpanded({...memoryExpanded, constraints: e.target.open})} className="bg-gray-700/50 rounded p-2">
-                      <summary className="cursor-pointer text-sm font-medium text-gray-300 hover:text-white">CONSTRAINTS.md</summary>
-                      <div className="mt-2 max-h-64 overflow-auto">
-                        <MarkdownRenderer content={repo.memory.constraints} />
-                      </div>
-                    </details>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Path & Metadata */}
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 lg:col-span-2">
-              <h2 className="font-semibold mb-3">Repository Details</h2>
-              <div className="text-sm space-y-2">
-                <div className="flex justify-between"><span className="text-gray-400">Path</span><span className="text-gray-300 font-mono text-xs truncate ml-4">{repo.path}</span></div>
-                {repo.strapEntry && (
-                  <>
-                    <div className="flex justify-between"><span className="text-gray-400">Scope</span><span className="text-gray-300">{repo.strapEntry.scope}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-400">Shims</span><span className="text-gray-300">{repo.strapEntry.shimCount}</span></div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="mt-6 flex gap-3 flex-wrap">
-            {repo.testCommand && (
-              <button onClick={() => handleAction('test')} className="px-4 py-2 bg-green-600 hover:bg-green-500 rounded text-white flex items-center gap-2">
-                <Play className="w-4 h-4" /> Run Tests
+              <button onClick={openEditModal} className="text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-gray-300">
+                Edit
               </button>
-            )}
-            <button onClick={() => handleAction('git-pull')} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300">
-              Git Pull
-            </button>
-            <button onClick={() => handleAction('open-claude')} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white flex items-center gap-2">
-              <Zap className="w-4 h-4" /> Open Claude
-            </button>
-            <button onClick={() => handleAction('open-vscode')} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 flex items-center gap-2">
-              <Code className="w-4 h-4" /> Open VS Code
-            </button>
-            <button onClick={() => handleAction('open-terminal')} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 flex items-center gap-2">
-              <TerminalSquare className="w-4 h-4" /> Open Terminal
-            </button>
+            </div>
+
+            {/* Metadata row with buttons */}
+            <div className="flex items-start justify-between gap-6 mb-3">
+              <div className="flex-1">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm mb-3">
+                  <div><span className="text-gray-400">Path:</span> <span className="text-gray-300 font-mono text-xs">{repo.path}</span></div>
+                  {repo.strapEntry?.status && <div><span className="text-gray-400">Status:</span> <span className="text-gray-300">{repo.strapEntry.status}</span></div>}
+                  {repo.strapEntry?.chinvexDepth && <div><span className="text-gray-400">Depth:</span> <span className="text-gray-300">{repo.strapEntry.chinvexDepth}</span></div>}
+                  {repo.strapEntry && <div><span className="text-gray-400">Shims:</span> <span className="text-gray-300">{repo.strapEntry.shimCount}</span></div>}
+                </div>
+                {repo.strapEntry?.tags && repo.strapEntry.tags.length > 0 && (
+                  <div className="flex gap-1 mb-2 flex-wrap">
+                    {repo.strapEntry.tags.map((tag, i) => <span key={i} className="px-2 py-0.5 bg-gray-700 rounded text-xs text-gray-300">{tag}</span>)}
+                  </div>
+                )}
+                <div className="flex gap-3 text-sm">
+                  {repo.tools?.claudeProject && <span className="text-blue-400">claude</span>}
+                  {repo.tools?.venv && <span className="text-green-400">venv</span>}
+                  {repo.tools?.node && <span className="text-yellow-400">node</span>}
+                  {repo.tools?.memory && <span className="text-purple-400">memory</span>}
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <button onClick={() => handleAction('open-claude')} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white flex items-center gap-2 text-sm whitespace-nowrap">
+                  <Zap className="w-4 h-4" /> Open Claude
+                </button>
+                <button onClick={() => handleAction('open-vscode')} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 flex items-center gap-2 text-sm whitespace-nowrap">
+                  <Code className="w-4 h-4" /> Open VS Code
+                </button>
+                <button onClick={() => handleAction('open-terminal')} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 flex items-center gap-2 text-sm whitespace-nowrap">
+                  <TerminalSquare className="w-4 h-4" /> Open Terminal
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* Panel 2 - Status & Git Side by Side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" style={{width: '1000px', maxWidth: '100%'}}>
+
+            {/* Status Panel */}
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+              <h2 className="font-semibold mb-4">Status</h2>
+
+              {/* Setup Section */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-300 mb-3 pb-2 border-b border-gray-700">Setup</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Result</span>
+                    <SetupBadge setup={repo.setup} />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Last Attempt</span>
+                    <span className="text-gray-300">{repo.setup?.last_attempt ? <RelativeTime date={repo.setup.last_attempt} /> : <span className="text-gray-500">Never</span>}</span>
+                  </div>
+                  {repo.setup?.result === 'failed' && repo.setup?.error && (
+                    <div className="text-xs text-red-400 mt-2 p-2 bg-red-500/10 rounded">{repo.setup.error}</div>
+                  )}
+                </div>
+                {repo.testCommand && (
+                  <button onClick={() => handleAction('test')} className="w-full px-3 py-2 bg-green-600 hover:bg-green-500 rounded text-white flex items-center justify-center gap-2 text-sm mt-3">
+                    <Play className="w-4 h-4" /> Run Tests
+                  </button>
+                )}
+              </div>
+
+              {/* Ingestion Section */}
+              {repo.chinvexStatus && repo.chinvexStatus.status !== 'unknown' && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-300 mb-3 pb-2 border-b border-gray-700 flex items-center gap-2">
+                    <Database className="w-4 h-4" /> Ingestion
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Status</span>
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded border ${
+                        repo.chinvexStatus.status === 'ingesting' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                        repo.chinvexStatus.status === 'idle' ? 'bg-gray-500/20 text-gray-400 border-gray-500/30' :
+                        repo.chinvexStatus.status === 'stale' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                        'bg-red-500/20 text-red-400 border-red-500/30'
+                      }`}>
+                        {repo.chinvexStatus.status.toUpperCase()}
+                      </span>
+                    </div>
+                    {repo.chinvexStatus.context && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Context</span>
+                        <span className="text-gray-300">{repo.chinvexStatus.context}</span>
+                      </div>
+                    )}
+                    {repo.chinvexStatus.files_processed !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Files</span>
+                        <span className="text-gray-300">{repo.chinvexStatus.files_processed}</span>
+                      </div>
+                    )}
+                    {repo.chinvexStatus.updated_at && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Updated</span>
+                        <span className="text-gray-300"><RelativeTime date={repo.chinvexStatus.updated_at} /></span>
+                      </div>
+                    )}
+                    {repo.chinvexStatus.error && (
+                      <div className="text-xs text-red-400 mt-2 p-2 bg-red-500/10 rounded break-words">{repo.chinvexStatus.error}</div>
+                    )}
+                    {repo.chinvexStatus.message && (
+                      <div className="text-xs text-orange-400 mt-2 p-2 bg-orange-500/10 rounded break-words">{repo.chinvexStatus.message}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Git Panel */}
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
+              <h2 className="font-semibold mb-4 flex items-center gap-2">
+                <GitBranch className="w-5 h-5" /> Git
+              </h2>
+
+              {/* Git Status Info */}
+              <div className="space-y-3 text-sm mb-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Branch</span>
+                  <span className="text-gray-300">{repo.git?.branch || 'unknown'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Status</span>
+                  <StatusBadge status={repo.git?.status || 'unknown'} />
+                </div>
+                {repo.git?.ahead > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Ahead</span>
+                    <span className="text-green-400">{repo.git.ahead} commits</span>
+                  </div>
+                )}
+                {repo.git?.behind > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Behind</span>
+                    <span className="text-yellow-400">{repo.git.behind} commits</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Git Action Buttons */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => handleAction('git-pull')}
+                  className="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 text-sm"
+                >
+                  Pull
+                </button>
+                <button
+                  onClick={() => handleAction('git-push')}
+                  disabled={!repo.git?.ahead || repo.git.ahead === 0}
+                  className="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Push
+                </button>
+              </div>
+
+              {/* Recent Commits */}
+              {repo.recentCommits && repo.recentCommits.length > 0 && (
+                <div className="border-t border-gray-700 pt-4">
+                  <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                    <GitCommit className="w-4 h-4" /> Recent Commits
+                  </h3>
+                  <div className="space-y-2">
+                    {(showAllCommits ? repo.recentCommits : repo.recentCommits.slice(0, 3)).map((commit, idx) => (
+                      <div key={idx} className="text-xs pb-2 border-b border-gray-700/50 last:border-0 last:pb-0">
+                        <div className="flex items-start gap-2 mb-1">
+                          <code className="bg-gray-900 px-1.5 py-0.5 rounded font-mono text-gray-400 flex-shrink-0">
+                            {commit.hash.substring(0, 7)}
+                          </code>
+                          <div className="flex-1 min-w-0 text-gray-300 break-words">{commit.message}</div>
+                        </div>
+                        <div className="text-gray-500 ml-[60px]">
+                          {commit.author} · {new Date(commit.date).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {repo.recentCommits.length > 3 && (
+                    <button
+                      onClick={() => setShowAllCommits(!showAllCommits)}
+                      className="w-full mt-3 px-2 py-1 text-xs bg-gray-700/50 hover:bg-gray-700 rounded text-gray-400 hover:text-gray-300"
+                    >
+                      {showAllCommits ? '- Show Less' : `+ Show ${repo.recentCommits.length - 3} More`}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Memory Files */}
+          {repo.memory && (
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6" style={{width: '1000px', maxWidth: '100%'}}>
+              <h2 className="font-semibold mb-3 flex items-center gap-2"><FileText className="w-4 h-4 text-purple-400" /> Memory Files</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                {repo.memory.state && (
+                  <details open={memoryExpanded.state} onToggle={(e) => setMemoryExpanded({...memoryExpanded, state: e.target.open})} className="bg-gray-700/50 rounded p-2">
+                    <summary className="cursor-pointer text-sm font-medium text-gray-300 hover:text-white">STATE.md</summary>
+                    <div className="mt-2 max-h-48 overflow-auto">
+                      <MarkdownRenderer content={repo.memory.state} />
+                    </div>
+                  </details>
+                )}
+                {repo.memory.constraints && (
+                  <details open={memoryExpanded.constraints} onToggle={(e) => setMemoryExpanded({...memoryExpanded, constraints: e.target.open})} className="bg-gray-700/50 rounded p-2">
+                    <summary className="cursor-pointer text-sm font-medium text-gray-300 hover:text-white">CONSTRAINTS.md</summary>
+                    <div className="mt-2 max-h-48 overflow-auto">
+                      <MarkdownRenderer content={repo.memory.constraints} />
+                    </div>
+                  </details>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       );
     };
@@ -939,6 +1240,7 @@
               loading={loading}
               lastRefresh={lastRefresh}
               onRefresh={refresh}
+              api={api}
             />
             <Switch>
               <Route path="/repo/:name">

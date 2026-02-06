@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { join } from 'path';
-import { config, listDirs, exists, getGitStatus, readJson, runCmd } from '../lib/utils.js';
+import { config, listDirs, exists, getGitStatus, readJson, runCmd, getChinvexStatus } from '../lib/utils.js';
 
 export const reposRoutes = Router();
 
@@ -49,7 +49,9 @@ async function refreshReposCache() {
       const repo = {
         name: regEntry.name,
         id: regEntry.id,
-        scope: regEntry.scope,
+        status: regEntry.status,
+        chinvexDepth: regEntry.chinvex_depth,
+        tags: regEntry.tags || [],
         path: repoPath,
         exists: repoExists,
         shimCount,
@@ -92,6 +94,9 @@ async function refreshReposCache() {
           testCommand = testCommand || 'pytest';
         }
         repo.testCommand = testCommand;
+
+        // Get Chinvex ingestion status
+        repo.chinvexStatus = await getChinvexStatus(repoPath);
       } else {
         // Repo doesn't exist on disk yet
         repo.git = { error: 'Repository path does not exist' };
@@ -184,7 +189,7 @@ reposRoutes.get('/:name', async (req, res, next) => {
     // Get recent commits with more details
     let recentCommits = [];
     try {
-      const logResult = await runCmd('git', ['log', '--format=%H|%an|%ae|%at|%s', '-10'], { cwd: repoPath });
+      const logResult = await runCmd(config.gitPath, ['log', '--format=%H|%an|%ae|%at|%s', '-10'], { cwd: repoPath });
       recentCommits = logResult.stdout.split('\n').filter(Boolean).map(line => {
         const [hash, author, email, timestamp, ...msgParts] = line.split('|');
         return {
@@ -195,7 +200,9 @@ reposRoutes.get('/:name', async (req, res, next) => {
           message: msgParts.join('|')
         };
       });
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error(`[git log error for ${name}]:`, err.message);
+    }
 
     // Read memory files if they exist
     let memory = null;
@@ -232,6 +239,9 @@ reposRoutes.get('/:name', async (req, res, next) => {
       testCommand = testCommand || 'pytest';
     }
 
+    // Get Chinvex status
+    const chinvexStatus = await getChinvexStatus(repoPath);
+
     res.json({
       name,
       path: repoPath,
@@ -240,9 +250,12 @@ reposRoutes.get('/:name', async (req, res, next) => {
       memory,
       tools,
       testCommand,
+      chinvexStatus,
       setup: cachedRepo?.setup,
       strapEntry: cachedRepo ? {
-        scope: cachedRepo.scope,
+        status: cachedRepo.status,
+        chinvexDepth: cachedRepo.chinvexDepth,
+        tags: cachedRepo.tags,
         shimCount: cachedRepo.shimCount,
         id: cachedRepo.id,
       } : null,
@@ -302,6 +315,72 @@ reposRoutes.post('/:name/test', async (req, res, next) => {
 });
 
 /**
+ * POST /api/repos/:name/configure
+ * Update registry metadata for a repo via strap configure
+ */
+reposRoutes.post('/:name/configure', async (req, res, next) => {
+  try {
+    const { name } = req.params;
+    const { status, depth, tags } = req.body;
+
+    // Build strap configure command
+    const args = ['configure', name];
+
+    if (status) args.push('--status', status);
+    if (depth !== undefined) args.push('--depth', depth);
+    if (tags !== undefined) {
+      // Tags should be comma-separated string
+      args.push('--tags', Array.isArray(tags) ? tags.join(',') : tags);
+    }
+
+    // Add flags for API usage
+    args.push('--yes', '--json');
+
+    console.log(`[configure] Running: strap ${args.join(' ')}`);
+    const result = await runCmd('strap', args, { cwd: config.strapRoot });
+    console.log(`[configure] Exit code: ${result.code}`);
+    console.log(`[configure] Stdout:`, result.stdout);
+    console.log(`[configure] Stderr:`, result.stderr);
+
+    if (result.code !== 0) {
+      return res.status(400).json({
+        error: 'Configuration failed',
+        stderr: result.stderr,
+        stdout: result.stdout,
+        exitCode: result.code,
+      });
+    }
+
+    // Parse JSON response (may have warnings/ANSI codes before the JSON)
+    let response;
+    try {
+      // Find the JSON object in stdout (starts with '{')
+      const jsonStart = result.stdout.indexOf('{');
+      if (jsonStart === -1) {
+        throw new Error('No JSON object found in output');
+      }
+      const jsonStr = result.stdout.substring(jsonStart);
+      response = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.error('[configure] JSON parse error:', parseErr.message);
+      return res.status(500).json({
+        error: 'Failed to parse strap configure response',
+        stdout: result.stdout,
+        stderr: result.stderr,
+      });
+    }
+
+    // Trigger cache refresh and wait for it
+    await refreshReposCache();
+
+    res.json(response);
+  } catch (err) {
+    console.error('[configure] Unexpected error:', err);
+    next(err);
+  }
+});
+
+/**
  * POST /api/repos/:name/git
  * Run git command on repo
  */
@@ -316,7 +395,7 @@ reposRoutes.post('/:name/git', async (req, res, next) => {
     }
 
     // Whitelist safe git commands
-    const safeCommands = ['status', 'log', 'branch', 'diff', 'fetch', 'pull'];
+    const safeCommands = ['status', 'log', 'branch', 'diff', 'fetch', 'pull', 'push'];
     const gitCmd = args?.[0];
 
     if (!safeCommands.includes(gitCmd)) {
@@ -326,7 +405,7 @@ reposRoutes.post('/:name/git', async (req, res, next) => {
       });
     }
 
-    const result = await runCmd('git', args, { cwd: repoPath });
+    const result = await runCmd(config.gitPath, args, { cwd: repoPath });
 
     res.json({
       command: `git ${args.join(' ')}`,

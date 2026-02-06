@@ -26,6 +26,7 @@ module.exports = {
         CHINVEX_URL: 'https://chinvex.unkndlabs.com',
         // CHINVEX_API_TOKEN: 'set-this-in-env-or-here',
         PWSH_PATH: 'C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.5.4.0_x64__8wekyb3d8bbwe\\pwsh.exe',
+        GIT_PATH: 'C:\\Program Files\\Git\\cmd\\git.exe',
       },
       error_file: 'P:\\software\\allmind\\logs\\error.log',
       out_file: 'P:\\software\\allmind\\logs\\out.log',
