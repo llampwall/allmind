@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { runPwsh, runCmd, config, exists, chinvexRequest } from '../lib/utils.js';
+import { runPwsh, runCmd, runPm2, config, exists, chinvexRequest } from '../lib/utils.js';
 import os from 'os';
 
 export const healthRoutes = Router();
@@ -34,7 +34,7 @@ healthRoutes.get('/', async (req, res, next) => {
 
     // Check PM2
     try {
-      const pm2Result = await runCmd('pm2', ['jlist']);
+      const pm2Result = await runPm2(['jlist']);
       const pm2Processes = JSON.parse(pm2Result.stdout || '[]');
       services.push({
         id: 'pm2',

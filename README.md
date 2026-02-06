@@ -56,9 +56,23 @@ The dashboard will be available at:
 
 Or run with pm2 for persistence:
 ```powershell
-pm2 start ecosystem.config.cjs
+pm2 start config/ecosystem.config.cjs
 pm2 save
 ```
+
+### PM2 Setup
+
+**IMPORTANT:** PM2 is vendored and managed by strap. You do NOT need to install PM2 globally or configure any paths.
+
+- **Vendored Location:** `P:\software\_node-tools\pm2`
+- **Shim:** `P:\software\bin\pm2.cmd` (managed by strap)
+- **No manual installation needed** - PM2 is automatically available system-wide via the shim
+
+The `lib/utils.js` and `config/ecosystem.config.cjs` files use `pm2.cmd` directly (no paths required). This setup ensures PM2 won't break if global package managers change. If PM2 ever stops working:
+
+1. Verify the shim exists: `where.exe pm2.cmd` should show `P:\software\bin\pm2.cmd`
+2. Check the vendor installation: `P:\software\_node-tools\pm2\node_modules\.bin\pm2.cmd --version`
+3. If broken, recreate the shim: `strap shim pm2 --cmd "P:\software\_node-tools\pm2\node_modules\.bin\pm2.cmd" --repo _strap`
 
 **Network Access:**
 The server listens on `0.0.0.0:7780`, making it accessible from:
@@ -99,6 +113,10 @@ Environment variables:
 | `CHINVEX_URL` | `https://chinvex.unkndlabs.com` | Chinvex API URL |
 | `CHINVEX_API_TOKEN` | (required) | Chinvex bearer token |
 | `PWSH_PATH` | `C:\\Program Files\\WindowsApps\\...\\pwsh.exe` | PowerShell 7 path |
+| `GIT_PATH` | `C:\\Program Files\\Git\\cmd\\git.exe` | Git executable path |
+| `PM2_CMD` | `pm2.cmd` | PM2 command (vendored by strap, no configuration needed) |
+
+**Note:** PM2_CMD uses the vendored PM2 shim and does not require manual configuration. See "PM2 Setup" section above.
 
 ## API Endpoints
 

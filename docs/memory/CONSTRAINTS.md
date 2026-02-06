@@ -14,6 +14,7 @@
 - Chinvex API: https://chinvex.unkndlabs.com
 - PowerShell 7 path: `C:\Program Files\WindowsApps\Microsoft.PowerShell_7.5.4.0_x64__8wekyb3d8bbwe\pwsh.exe`
 - Git path: `C:\Program Files\Git\cmd\git.exe` (added 2026-02-05)
+- PM2 vendored at: `P:\software\_node-tools\pm2` with strap shim at `P:\software\bin\pm2.cmd` (added 2026-02-05)
 - PM2 restart limits: max_restarts=10, min_uptime=5000ms (10000ms for Python), restart_delay=2000-5000ms
 
 ## Rules
@@ -37,7 +38,8 @@
 - PM2 crash loops if restart settings not configured properly (fork mode, max_restarts, min_uptime required)
 - Missing CHINVEX_API_TOKEN will break Chinvex routes
 - Git path with spaces requires shell:false in spawn() to avoid command splitting (added 2026-02-05)
-- PM2 processes don't inherit full system PATH - use explicit paths for executables (added 2026-02-05)
+- PM2 processes don't inherit full system PATH - use explicit paths for executables like git and pwsh (updated 2026-02-05)
+- PM2 is vendored by strap - do not install globally or modify paths in code (added 2026-02-05)
 
 ## Superseded
 (None yet)

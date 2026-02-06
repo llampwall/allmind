@@ -31,22 +31,6 @@
       "priority": "medium",
       "created_at": "2026-02-06T02:07:57.046Z",
       "completed_at": "2026-02-06T02:29:41.891Z"
-    },
-    {
-      "id": "16062401-2b33-4985-8b29-e748b020b9ed",
-      "text": "make allmind responsive for viewing on phone",
-      "repo": "allmind",
-      "priority": "medium",
-      "created_at": "2026-02-06T02:30:24.075Z",
-      "completed_at": null
-    },
-    {
-      "id": "b6e607e4-3ccc-4e7c-9e12-2f1913d10aae",
-      "text": "update UX library with thegridcn",
-      "repo": "allmind",
-      "priority": "medium",
-      "created_at": "2026-02-06T02:30:52.579Z",
-      "completed_at": null
     }
   ]
 }

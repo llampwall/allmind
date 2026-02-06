@@ -24,6 +24,7 @@ module.exports = {
         STRAP_CONFIG: 'P:\\software\\_strap\\config.json',
         SHIMS_DIR: 'P:\\software\\bin',
         CHINVEX_URL: 'https://chinvex.unkndlabs.com',
+        PM2_PATH: 'pm2.cmd',
         PWSH_PATH: 'C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.5.4.0_x64__8wekyb3d8bbwe\\pwsh.exe',
         GIT_PATH: 'C:\\Program Files\\Git\\cmd\\git.exe',
       },

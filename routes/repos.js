@@ -65,8 +65,27 @@ async function refreshReposCache() {
         const gitDir = join(repoPath, '.git');
         if (await exists(gitDir)) {
           repo.git = await getGitStatus(repoPath);
+
+          // Get recent commits for Heads Up panel
+          try {
+            const logResult = await runCmd(config.gitPath, ['log', '--format=%H|%an|%ae|%at|%s', '-10'], { cwd: repoPath });
+            repo.recentCommits = logResult.stdout.split('\n').filter(Boolean).map(line => {
+              const [hash, author, email, timestamp, ...msgParts] = line.split('|');
+              return {
+                hash,
+                author,
+                email,
+                date: new Date(parseInt(timestamp) * 1000).toISOString(),
+                message: msgParts.join('|')
+              };
+            });
+          } catch (err) {
+            console.error(`[git log error for ${regEntry.name}]:`, err.message);
+            repo.recentCommits = [];
+          }
         } else {
           repo.git = { error: 'Not a git repository' };
+          repo.recentCommits = [];
         }
 
         // Check for special files
@@ -100,6 +119,7 @@ async function refreshReposCache() {
       } else {
         // Repo doesn't exist on disk yet
         repo.git = { error: 'Repository path does not exist' };
+        repo.recentCommits = [];
         repo.tools = {
           claudeProject: false,
           venv: false,

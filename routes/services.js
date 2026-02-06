@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { runCmd, config, chinvexRequest } from '../lib/utils.js';
+import { runCmd, runPm2, config, chinvexRequest } from '../lib/utils.js';
 
 export const servicesRoutes = Router();
 
@@ -13,7 +13,7 @@ servicesRoutes.get('/', async (req, res, next) => {
 
     // Get PM2 processes
     try {
-      const pm2Result = await runCmd('pm2', ['jlist']);
+      const pm2Result = await runPm2(['jlist']);
       const pm2Processes = JSON.parse(pm2Result.stdout || '[]');
 
       for (const proc of pm2Processes) {
@@ -87,7 +87,7 @@ servicesRoutes.post('/:id/restart', async (req, res, next) => {
     }
 
     const pm2Id = id.replace('pm2-', '');
-    const result = await runCmd('pm2', ['restart', pm2Id]);
+    const result = await runPm2(['restart', pm2Id]);
 
     res.json({
       id,
@@ -114,7 +114,7 @@ servicesRoutes.post('/:id/stop', async (req, res, next) => {
     }
 
     const pm2Id = id.replace('pm2-', '');
-    const result = await runCmd('pm2', ['stop', pm2Id]);
+    const result = await runPm2(['stop', pm2Id]);
 
     res.json({
       id,
@@ -141,7 +141,7 @@ servicesRoutes.post('/:id/start', async (req, res, next) => {
     }
 
     const pm2Id = id.replace('pm2-', '');
-    const result = await runCmd('pm2', ['start', pm2Id]);
+    const result = await runPm2(['start', pm2Id]);
 
     res.json({
       id,
@@ -169,7 +169,7 @@ servicesRoutes.get('/:id/logs', async (req, res, next) => {
     }
 
     const pm2Id = id.replace('pm2-', '');
-    const result = await runCmd('pm2', ['logs', pm2Id, '--lines', String(lines), '--nostream']);
+    const result = await runPm2(['logs', pm2Id, '--lines', String(lines), '--nostream']);
 
     res.json({
       id,
