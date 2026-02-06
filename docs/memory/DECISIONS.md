@@ -8,9 +8,56 @@
 - Registry-centric architecture: registry.json is source of truth, filesystem enriches
 - Dashboard uses inline React/Babel in HTML (no separate JSX build step)
 - PM2 manages all core services with proper restart limits
-- Fixed UI bugs: search results mapping, clickable context rows, shim iteration
+- Fixed git availability in PM2 by using explicit git path with shell:false
+- Added Heads Up panel with parsed STATE.md sections for quick project status
+- Tailscale network access enabled via 0.0.0.0 binding
+- Hash-based routing for per-repo detail views
 
 ## 2026-02
+
+### 2026-02-05 — Heads Up panel with STATE.md parsing
+
+- **Why:** Provide quick at-a-glance project status without scrolling through full memory files
+- **Impact:** Added sticky sidebar panel that parses STATE.md sections (Current Objective, Next Actions, Blockers) and displays last commit. Memory Files collapsed into panel bottom. Restructured layout to 2/3 main + 1/3 Heads Up.
+- **Evidence:** 5be8524
+
+### 2026-02-05 — Tailscale network access via 0.0.0.0 binding
+
+- **Why:** Enable dashboard access from other devices on tailscale network (e.g., mobile, tablet)
+- **Impact:** Changed server.listen() to bind to 0.0.0.0:7780 instead of localhost only. Updated README with network access details and security notes.
+- **Evidence:** f9583b5
+
+### 2026-02-05 — Fixed git availability in PM2 environment
+
+- **Symptom:** Recent commits showing empty array, git log commands failing silently in PM2
+- **Root cause:** PM2 processes don't inherit full system PATH, and shell:true with paths containing spaces breaks command execution. Git path `C:\Program Files\Git\cmd\git.exe` was being split at the space.
+- **Fix:** Added config.gitPath with explicit git.exe path, changed runCmd to use shell:false to avoid shell interpretation issues with spaces and percent characters
+- **Prevention:** Use explicit paths for all external executables when running under PM2, use shell:false for commands with special characters
+- **Evidence:** a6ee353
+
+### 2026-02-05 — Git integration with push support and Recent Commits display
+
+- **Why:** Users need to see recent commit history and push changes directly from dashboard
+- **Impact:** Restructured repo detail layout with Status and Git panels side-by-side. Added Recent Commits section with expand/collapse (3 default, show all button). Added Push button (disabled unless ahead of origin). Added push to safe git commands whitelist.
+- **Evidence:** a6ee353
+
+### 2026-02-05 — Markdown rendering for memory files
+
+- **Why:** Memory files in STATE.md and CONSTRAINTS.md format better as rendered markdown than plain text
+- **Impact:** Integrated marked.js library with dark theme CSS styling for headers, lists, code blocks, tables
+- **Evidence:** dd4e221
+
+### 2026-02-05 — Per-repo detail views with hash-based routing
+
+- **Why:** Users need dedicated pages to view individual repository details, git status, commits, and memory files
+- **Impact:** Added React Router v5 with HashRouter for client-side navigation. Created Sidebar with Quick Access repo list. Created RepoDetailView showing git status, commits, memory files, and actions. URLs: `http://localhost:7780/#/repo/:name`
+- **Evidence:** 2a82a5a
+
+### 2026-02-05 — Visual support for registry setup field
+
+- **Why:** Setup health status wasn't visible in UI - users couldn't tell if repos had successful setup
+- **Impact:** Added SetupBadge component displaying setup status (succeeded/failed/skipped/not_attempted) with color coding and error details
+- **Evidence:** a2ab2b0
 
 ### 2026-02-04 — Initial AllMind implementation
 

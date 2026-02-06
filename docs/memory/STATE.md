@@ -7,8 +7,9 @@
 Maintain and improve AllMind control center for managing development infrastructure
 
 ## Active Work
-- Dashboard improvements and bug fixes completed
-- Claude Code integration configured
+- Heads Up panel with project status overview completed
+- Git integration with recent commits display working
+- Tailscale network access configured
 
 ## Blockers
 None
@@ -16,20 +17,21 @@ None
 ## Next Actions
 - [ ] Set CHINVEX_API_TOKEN in environment or ecosystem.config.cjs
 - [ ] Test PM2 services startup (allmind, chinvex-gateway, chinvex-tunnel, chinvex-sync)
-- [ ] Verify dashboard at http://localhost:7780
+- [ ] Consider adding edit/quick actions to Heads Up panel
 
 ## Quick Reference
 - Run: `npm start` (dev) or `pm2 start config/ecosystem.config.cjs` (prod)
 - Test: `curl http://localhost:7780/api/health`
 - Entry point: `server.js`
-- Dashboard: http://localhost:7780
+- Dashboard: http://localhost:7780 (localhost or tailscale)
+- Repo detail views: http://localhost:7780/#/repo/:name
 
 ## Out of Scope (for now)
 - Production hardening / security
-- External network access (keep port 7780 firewalled)
+- Authentication (assumes trusted network only)
 
 ---
 Last memory update: 2026-02-05
-Commits covered through: da436974e6a35c5b1e39e769d4e67672fb312ea0
+Commits covered through: 5be85249f6eda2cce42d3e307634630058561040
 
-<!-- chinvex:last-commit:da436974e6a35c5b1e39e769d4e67672fb312ea0 -->
+<!-- chinvex:last-commit:5be85249f6eda2cce42d3e307634630058561040 -->
