@@ -16,9 +16,12 @@ System health dashboard showing:
 Manage all repositories registered in your system:
 - View all repos from `registry.json` (source of truth)
 - Git status, branch info, ahead/behind counts
+- Repository metadata: lifecycle status, chinvex depth, tags
+- Edit metadata directly from dashboard (syncs with registry)
 - Tool detection (Claude projects, Python venvs, Node packages)
 - Quick actions: Open in Claude/VS Code/Terminal
 - Run tests, view memory files, git operations
+- Memory files (STATE.md, CONSTRAINTS.md) display side-by-side on desktop
 
 ### Chinvex
 Knowledge base search and context management:
@@ -47,13 +50,23 @@ npm install
 npm start
 ```
 
-The dashboard will be available at `http://localhost:7780`
+The dashboard will be available at:
+- Local: `http://localhost:7780`
+- Tailscale: `http://<tailscale-ip>:7780`
 
 Or run with pm2 for persistence:
 ```powershell
 pm2 start ecosystem.config.cjs
 pm2 save
 ```
+
+**Network Access:**
+The server listens on `0.0.0.0:7780`, making it accessible from:
+- Localhost (127.0.0.1)
+- LAN IP addresses
+- Tailscale network
+
+This allows you to access the dashboard from other devices on your tailscale network.
 
 ## Architecture
 
@@ -109,6 +122,12 @@ Environment variables:
 - `GET /api/repos/:name` - Repo details + memory files
 - `POST /api/repos/:name/test` - Run tests
 - `POST /api/repos/:name/git` - Run safe git commands
+- `POST /api/repos/:name/configure` - Update registry metadata (status, depth, tags)
+
+**Repo Metadata:**
+- `status`: Lifecycle status (active, stable, archived, deprecated)
+- `chinvexDepth`: Ingestion depth for Chinvex (light, full)
+- `tags`: Array of category tags for organizing repos
 
 **Note:** Registry is the source of truth. All repos in `registry.json` will appear, even if they don't exist on disk yet.
 
@@ -155,5 +174,7 @@ Built to grow. Additional views, data sources, and integrations plug in through 
 
 - This is a local development tool, not production-hardened
 - Actions execute commands on your system with your permissions
-- Keep port 7780 firewalled from external access
+- Server listens on `0.0.0.0:7780` for tailscale access
+- Keep port 7780 firewalled from untrusted networks (safe on tailscale)
 - Chinvex API token in environment provides full access to knowledge base
+- No authentication - assumes trusted network (tailscale or localhost only)

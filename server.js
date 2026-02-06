@@ -65,7 +65,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`AllMind running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`AllMind running on http://0.0.0.0:${PORT}`);
+  console.log(`Accessible via localhost:${PORT} or tailscale IP`);
   console.log(`Strap root: ${process.env.STRAP_ROOT || 'P:\\software'}`);
 });
