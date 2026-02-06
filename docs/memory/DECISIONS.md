@@ -9,11 +9,39 @@
 - Dashboard uses inline React/Babel in HTML (no separate JSX build step)
 - PM2 manages all core services with proper restart limits
 - Fixed git availability in PM2 by using explicit git path with shell:false
-- Added Heads Up panel with parsed STATE.md sections for quick project status
-- Tailscale network access enabled via 0.0.0.0 binding
-- Hash-based routing for per-repo detail views
+- Added comprehensive TODO system with priority levels, repo tagging, and markdown rendering
+- Integrated Launch in Claude button for Windows Terminal with repo context
+- Added system-wide SITREP panel aggregating commits, todos, and blockers across all repos
+- Created runPm2() wrapper for Windows .cmd execution compatibility
+- Redesigned overview with two-column layout (diagnostics/TODO/jobs left, SITREP right)
 
 ## 2026-02
+
+### 2026-02-05 — Two-column overview layout with SITREP on right
+
+- **Why:** Better space utilization and visual hierarchy - SITREP deserves dedicated column to show cross-repo status at a glance
+- **Impact:** Restructured overview into two equal columns. Left: System Diagnostics, TODO, Active Jobs (stacked). Right: SITREP panel (extends down as needed). Removed max-width constraints and duplicate "Last Done" section from SITREP.
+- **Evidence:** be5a35d
+
+### 2026-02-05 — PM2 Windows wrapper for .cmd execution
+
+- **Symptom:** PM2 commands failing silently when called via runCmd() with pm2.cmd path
+- **Root cause:** Windows .cmd batch files cannot be executed directly from Node child_process.spawn() - they require shell interpretation via cmd.exe
+- **Fix:** Created runPm2() wrapper function that invokes `cmd.exe /c pm2.cmd [args]` instead of calling pm2.cmd directly. Updated all PM2 command calls in routes/health.js, routes/services.js to use runPm2().
+- **Prevention:** All Windows batch files (.cmd, .bat) must be invoked via cmd.exe /c wrapper when using spawn() with shell:false
+- **Evidence:** 544e182
+
+### 2026-02-05 — System-wide SITREP panel aggregating cross-repo status
+
+- **Why:** Users need at-a-glance visibility into what's happening across all repos - last done, up next, critical blockers, highest ROI
+- **Impact:** Added SITREP panel on overview page that aggregates: Last Done (recent commits from all repos with repo badges), Up Next (top 3 todos by priority), Critical (repos with blockers), Highest ROI (single highest-priority todo). Restructured overview from service cards into hierarchical diagnostics panel + SITREP. Removed max-width constraints for better space utilization.
+- **Evidence:** 544e182
+
+### 2026-02-05 — Comprehensive TODO system with Launch in Claude integration
+
+- **Why:** Need centralized task tracking with repo tagging, priorities, and ability to launch tasks directly into Claude
+- **Impact:** Added full CRUD TODO system with /api/todos endpoints (GET/POST/PUT/DELETE), data/todos.json storage, priority levels (high/medium/low), repo tagging, markdown rendering with truncation (3/5 line limits), Launch in Claude button that opens Windows Terminal with repo context and initial prompt, delete functionality with hover effects. Added TODO panel to overview. Rebranded entire UI from C3 to ALLMIND.
+- **Evidence:** c0debdc
 
 ### 2026-02-05 — Heads Up panel with STATE.md parsing
 

@@ -16,6 +16,7 @@
 - Git path: `C:\Program Files\Git\cmd\git.exe` (added 2026-02-05)
 - PM2 vendored at: `P:\software\_node-tools\pm2` with strap shim at `P:\software\bin\pm2.cmd` (added 2026-02-05)
 - PM2 restart limits: max_restarts=10, min_uptime=5000ms (10000ms for Python), restart_delay=2000-5000ms
+- TODO storage: `data/todos.json` with in-memory cache (added 2026-02-06)
 
 ## Rules
 - Registry is source of truth for repos - filesystem is secondary enrichment
@@ -24,6 +25,7 @@
 - Require CHINVEX_API_TOKEN in environment for Chinvex integration
 - Use shell:false for git commands to avoid percent-escaping issues on Windows (added 2026-02-05)
 - Safe git commands whitelist: status, log, branch, diff, fetch, pull, push (updated 2026-02-05)
+- PM2 .cmd files must be invoked via `cmd.exe /c` wrapper on Windows (added 2026-02-06)
 
 ## Key Facts
 - API root: `/api`
@@ -32,6 +34,7 @@
 - Logs directory: `logs/` (error.log, out.log)
 - Repo detail URLs: `/#/repo/:name` (hash-based routing) (added 2026-02-05)
 - Memory files location: `docs/memory/` (STATE.md, CONSTRAINTS.md, DECISIONS.md) (added 2026-02-05)
+- TODO endpoints: GET/POST /api/todos, PUT/DELETE /api/todos/:id (added 2026-02-06)
 
 ## Hazards
 - Shims can be array or object format in registry - must handle both to prevent iteration errors
@@ -40,6 +43,7 @@
 - Git path with spaces requires shell:false in spawn() to avoid command splitting (added 2026-02-05)
 - PM2 processes don't inherit full system PATH - use explicit paths for executables like git and pwsh (updated 2026-02-05)
 - PM2 is vendored by strap - do not install globally or modify paths in code (added 2026-02-05)
+- Windows .cmd batch files fail when called directly from Node spawn() - must wrap with `cmd.exe /c` (added 2026-02-06)
 
 ## Superseded
 (None yet)
