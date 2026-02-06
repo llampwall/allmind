@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AllMind - Control Center</title>
+  <title>AllMind</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -69,6 +69,10 @@
       chevronRight: "M9 18l6-6-6-6",
       chevronDown: "M6 9l6 6 6-6",
       gitCommit: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM2 12h6M16 12h6",
+      checkSquare: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
+      square: "M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z",
+      list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
+      rocket: "M4.5 16.5c-1.5 1.25-2 5-2 5s3.75-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2zM9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5",
     };
 
     const Icon = ({ name, className = "w-4 h-4" }) => (
@@ -99,6 +103,10 @@
     const ChevronRight = ({ className }) => <Icon name="chevronRight" className={className} />;
     const ChevronDown = ({ className }) => <Icon name="chevronDown" className={className} />;
     const GitCommit = ({ className }) => <Icon name="gitCommit" className={className} />;
+    const CheckSquare = ({ className }) => <Icon name="checkSquare" className={className} />;
+    const Square = ({ className }) => <Icon name="square" className={className} />;
+    const ListIcon = ({ className }) => <Icon name="list" className={className} />;
+    const Rocket = ({ className }) => <Icon name="rocket" className={className} />;
 
     // Markdown Renderer Component
     const MarkdownRenderer = ({ content, className = "" }) => {
@@ -392,8 +400,7 @@
       return (
         <div className="w-56 bg-gray-800 border-r border-gray-700 flex flex-col">
           <div className="p-4 border-b border-gray-700 cursor-pointer hover:bg-gray-700/50" onClick={handleLogoClick}>
-            <div className="flex items-center gap-2"><Zap className="w-6 h-6 text-blue-400" /><span className="font-bold text-lg">C3</span></div>
-            <div className="text-xs text-gray-500 mt-1">Control Center</div>
+            <div className="flex items-center gap-2"><Zap className="w-6 h-6 text-blue-400" /><span className="font-bold text-lg">ALLMIND</span></div>
           </div>
           <nav className="flex-1 p-2 overflow-auto">
             <div className="mb-3">
@@ -446,6 +453,10 @@
       const [originalDepth, setOriginalDepth] = useState('');
       const [showAllCommits, setShowAllCommits] = useState(false);
       const [headsUpMemoryExpanded, setHeadsUpMemoryExpanded] = useState(false);
+      const [todos, setTodos] = useState([]);
+      const [todosLoading, setTodosLoading] = useState(true);
+      const [headsUpTodoExpanded, setHeadsUpTodoExpanded] = useState({});
+      const todoPanelRef = useRef(null);
 
       // Parse STATE.md sections for Heads Up panel
       const parseHeadsUpData = (stateMarkdown) => {
@@ -503,7 +514,23 @@
         }
       }, [name, api, setError]);
 
+      const fetchTodos = useCallback(async () => {
+        setTodosLoading(true);
+        try {
+          const params = new URLSearchParams();
+          params.set('repo', name);
+          const data = await api(`/api/todos?${params}`);
+          setTodos(data.todos || []);
+        } catch (err) {
+          console.error('Failed to fetch todos:', err);
+          setTodos([]);
+        } finally {
+          setTodosLoading(false);
+        }
+      }, [api, name]);
+
       useEffect(() => { fetchRepo(); }, [fetchRepo]);
+      useEffect(() => { fetchTodos(); }, [fetchTodos]);
 
       const openEditModal = () => {
         const currentDepth = repo.strapEntry?.chinvexDepth !== undefined ? repo.strapEntry.chinvexDepth : 'full';
@@ -938,6 +965,11 @@
               )}
             </div>
           </div>
+
+              {/* TODO Panel */}
+              <div ref={todoPanelRef}>
+                <TodoPanel repos={[]} api={api} filterRepo={name} title={`TODO: ${name}`} onUpdate={fetchTodos} />
+              </div>
             </div>
 
             {/* Right Column - Heads Up Panel (1/3 width, sticky) */}
@@ -974,18 +1006,101 @@
                           <ChevronRight className="w-4 h-4 text-blue-400" />
                           <h3 className="text-xs font-semibold text-gray-400 uppercase">Up Next</h3>
                         </div>
-                        {headsUpData.nextUp.length > 0 ? (
-                          <ul className="space-y-1 text-sm text-gray-300">
-                            {headsUpData.nextUp.map((item, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <span className="text-gray-500 mt-1">•</span>
-                                <span>{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="text-sm text-gray-500">No actions listed</div>
-                        )}
+                        {(() => {
+                          // Get STATE.md next actions
+                          const stateNextActions = headsUpData.nextUp.map((item, idx) => ({
+                            type: 'state',
+                            text: item,
+                            key: `state-${idx}`
+                          }));
+
+                          // Get open todos sorted by priority
+                          const priorityOrder = { high: 1, medium: 2, low: 3 };
+                          const openTodos = todos
+                            .filter(t => !t.completed_at)
+                            .sort((a, b) => (priorityOrder[a.priority || 'medium'] || 2) - (priorityOrder[b.priority || 'medium'] || 2))
+                            .slice(0, 3)
+                            .map(todo => ({
+                              type: 'todo',
+                              text: todo.text,
+                              priority: todo.priority || 'medium',
+                              id: todo.id,
+                              key: `todo-${todo.id}`
+                            }));
+
+                          // Merge: STATE items first, then todos, cap at 5 total
+                          const allItems = [...stateNextActions, ...openTodos].slice(0, 5);
+
+                          const priorityColors = {
+                            high: 'bg-red-500',
+                            medium: 'bg-yellow-500',
+                            low: 'bg-gray-500',
+                          };
+
+                          const scrollToTodo = (todoId) => {
+                            if (todoPanelRef.current) {
+                              todoPanelRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              // Brief highlight effect (would need to implement in TodoPanel)
+                            }
+                          };
+
+                          return allItems.length > 0 ? (
+                            <ul className="space-y-2 text-sm text-gray-300">
+                              {allItems.map((item) => (
+                                <li key={item.key} className="flex items-start gap-2 group">
+                                  {item.type === 'state' ? (
+                                    <>
+                                      <FileText className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                      <span className="flex-1">{item.text}</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Square className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                      <span className={`w-2 h-2 rounded-full ${priorityColors[item.priority]} mt-1.5 flex-shrink-0`} />
+                                      <div className="flex-1 min-w-0">
+                                        <div
+                                          onClick={() => scrollToTodo(item.id)}
+                                          className={`hover:text-blue-400 transition-colors cursor-pointer ${!headsUpTodoExpanded[item.id] ? 'line-clamp-5' : ''}`}
+                                        >
+                                          <MarkdownRenderer content={item.text} className="prose-sm prose-invert max-w-none" />
+                                        </div>
+                                        {(item.text.length > 250 || item.text.split('\n').length > 5) && (
+                                          <button
+                                            onClick={() => setHeadsUpTodoExpanded(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                                            className="text-xs text-blue-400 hover:text-blue-300 mt-1"
+                                          >
+                                            {headsUpTodoExpanded[item.id] ? 'Show less' : 'Show more...'}
+                                          </button>
+                                        )}
+                                      </div>
+                                      <button
+                                        onClick={async () => {
+                                          try {
+                                            await api('/api/actions/open-claude', {
+                                              method: 'POST',
+                                              body: JSON.stringify({
+                                                repo: name,
+                                                prompt: item.text,
+                                              }),
+                                            });
+                                          } catch (err) {
+                                            console.error('Failed to launch Claude:', err);
+                                          }
+                                        }}
+                                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 hover:text-blue-400 text-gray-500 transition-opacity"
+                                        title="Launch in Claude"
+                                      >
+                                        <Rocket className="w-3 h-3" />
+                                      </button>
+                                    </>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="text-sm text-gray-500">No actions listed</div>
+                          );
+                        })()}
                       </div>
 
                       {/* Critical */}
@@ -1062,7 +1177,291 @@
       );
     };
 
-    // SystemView Component (formerly C3Dashboard)
+    // TODO Components
+    const RepoSelectModal = ({ isOpen, onClose, repos, onSelect }) => {
+      if (!isOpen) return null;
+
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4 text-white">Select Repo for Claude</h3>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {repos.map(repo => (
+                <button
+                  key={repo.name}
+                  onClick={() => onSelect(repo.name)}
+                  className="w-full text-left px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white"
+                >
+                  {repo.name}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={onClose}
+              className="mt-4 w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    const TodoItem = ({ todo, onToggle, repos, api, onUpdate, showRepo = true }) => {
+      const [showRepoModal, setShowRepoModal] = useState(false);
+      const [isExpanded, setIsExpanded] = useState(false);
+      const priorityColors = {
+        high: 'bg-red-500',
+        medium: 'bg-yellow-500',
+        low: 'bg-gray-500',
+      };
+
+      const handleToggle = async () => {
+        try {
+          const completed_at = todo.completed_at ? null : new Date().toISOString();
+          await api(`/api/todos/${todo.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ completed_at }),
+          });
+          onUpdate();
+        } catch (err) {
+          console.error('Failed to toggle todo:', err);
+        }
+      };
+
+      const handleDelete = async () => {
+        try {
+          await api(`/api/todos/${todo.id}`, {
+            method: 'DELETE',
+          });
+          onUpdate();
+        } catch (err) {
+          console.error('Failed to delete todo:', err);
+        }
+      };
+
+      const handleLaunchClaude = async (repoName) => {
+        try {
+          const targetRepo = repoName || todo.repo;
+          if (!targetRepo) {
+            setShowRepoModal(true);
+            return;
+          }
+
+          await api('/api/actions/open-claude', {
+            method: 'POST',
+            body: JSON.stringify({
+              repo: targetRepo,
+              prompt: todo.text,
+            }),
+          });
+
+          setShowRepoModal(false);
+        } catch (err) {
+          console.error('Failed to launch Claude:', err);
+        }
+      };
+
+      return (
+        <>
+          <RepoSelectModal
+            isOpen={showRepoModal}
+            onClose={() => setShowRepoModal(false)}
+            repos={repos}
+            onSelect={handleLaunchClaude}
+          />
+          <div className="flex items-start gap-3 py-2 border-b border-gray-700 last:border-0 group">
+          <button onClick={handleToggle} className="flex-shrink-0 mt-0.5">
+            {todo.completed_at ? (
+              <CheckSquare className="w-5 h-5 text-green-400" />
+            ) : (
+              <Square className="w-5 h-5 text-gray-500 hover:text-gray-300" />
+            )}
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start gap-2">
+              <span className="h-5 flex items-center flex-shrink-0">
+                <span className={`w-2 h-2 rounded-full ${priorityColors[todo.priority || 'medium']}`} />
+              </span>
+              {showRepo && (
+                todo.repo ? (
+                  <a
+                    href={`#/repo/${todo.repo}`}
+                    className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30 flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {todo.repo}
+                  </a>
+                ) : (
+                  <span className="text-xs px-2 py-0.5 bg-gray-700 text-gray-400 rounded flex-shrink-0">global</span>
+                )
+              )}
+              <div className="flex-1 min-w-0">
+                <div
+                  className={`text-sm ${todo.completed_at ? 'line-through text-gray-500' : 'text-gray-300'} ${!isExpanded ? 'line-clamp-3' : ''}`}
+                >
+                  <MarkdownRenderer content={todo.text} className="prose-sm prose-invert max-w-none" />
+                </div>
+                {(todo.text.length > 150 || todo.text.split('\n').length > 3) && (
+                  <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="text-xs text-blue-400 hover:text-blue-300 mt-1"
+                  >
+                    {isExpanded ? 'Show less' : 'Show more...'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => handleLaunchClaude()}
+            className="flex-shrink-0 opacity-0 group-hover:opacity-100 hover:text-blue-400 text-gray-500 transition-opacity"
+            title="Launch in Claude"
+          >
+            <Rocket className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleDelete}
+            className="flex-shrink-0 opacity-0 group-hover:opacity-100 hover:text-red-400 text-gray-500 transition-opacity"
+            title="Delete"
+          >
+            <XCircle className="w-4 h-4" />
+          </button>
+        </div>
+        </>
+      );
+    };
+
+    const AddTodoForm = ({ repos, api, onAdd, preselectedRepo, hideRepoSelect }) => {
+      const [text, setText] = useState('');
+      const [repo, setRepo] = useState(preselectedRepo || null);
+      const [priority, setPriority] = useState('medium');
+      const [adding, setAdding] = useState(false);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!text.trim()) return;
+
+        setAdding(true);
+        try {
+          await api('/api/todos', {
+            method: 'POST',
+            body: JSON.stringify({ text: text.trim(), repo, priority }),
+          });
+          setText('');
+          setPriority('medium');
+          onAdd();
+        } catch (err) {
+          console.error('Failed to add todo:', err);
+        } finally {
+          setAdding(false);
+        }
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="flex gap-2 mb-4 flex-wrap">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Add a task..."
+            className="flex-1 min-w-[200px] px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            disabled={adding}
+          />
+          {!hideRepoSelect && (
+            <select
+              value={repo || ''}
+              onChange={(e) => setRepo(e.target.value || null)}
+              className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+              disabled={adding}
+            >
+              <option value="">Global</option>
+              {repos.map((r) => (
+                <option key={r.name} value={r.name}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+            disabled={adding}
+          >
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <button
+            type="submit"
+            disabled={adding || !text.trim()}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {adding ? 'Adding...' : 'Add'}
+          </button>
+        </form>
+      );
+    };
+
+    const TodoPanel = ({ repos, api, filterRepo, title = "TODO", onUpdate }) => {
+      const [todos, setTodos] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      const fetchTodos = useCallback(async () => {
+        setLoading(true);
+        try {
+          const params = new URLSearchParams();
+          if (filterRepo) params.set('repo', filterRepo);
+          const data = await api(`/api/todos?${params}`);
+          setTodos(data.todos || []);
+        } catch (err) {
+          console.error('Failed to fetch todos:', err);
+          setTodos([]);
+        } finally {
+          setLoading(false);
+        }
+      }, [api, filterRepo]);
+
+      const handleUpdate = useCallback(async () => {
+        await fetchTodos();
+        if (onUpdate) onUpdate();
+      }, [fetchTodos, onUpdate]);
+
+      useEffect(() => {
+        fetchTodos();
+      }, [fetchTodos]);
+
+      return (
+        <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <ListIcon className="w-4 h-4 text-purple-400" /> {title}
+          </h2>
+          <AddTodoForm
+            repos={repos}
+            api={api}
+            onAdd={handleUpdate}
+            preselectedRepo={filterRepo}
+            hideRepoSelect={!!filterRepo}
+          />
+          {loading ? (
+            <div className="flex items-center gap-2 text-gray-400 py-4">
+              <Loader2 className="w-4 h-4" /> Loading tasks...
+            </div>
+          ) : todos.length === 0 ? (
+            <p className="text-sm text-gray-500 py-4">No tasks yet</p>
+          ) : (
+            <div>
+              {todos.map((todo) => (
+                <TodoItem key={todo.id} todo={todo} repos={repos} api={api} onUpdate={handleUpdate} showRepo={!filterRepo} />
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // SystemView Component
     function SystemView({
       activeTab, setActiveTab,
       health, contexts, repos, services, shims, doctor,
@@ -1071,7 +1470,8 @@
       searchResults, searching,
       outputModal, setOutputModal,
       actionLoading,
-      runDoctor, doSearch, handleRepoAction, handleServiceAction
+      runDoctor, doSearch, handleRepoAction, handleServiceAction,
+      api
     }) {
       return (
         <div className="flex-1 overflow-auto">
@@ -1122,11 +1522,17 @@
                     <ServiceCard name="PM2 Services" icon={Server} status={services.some(s => s.type === 'pm2' && s.status === 'online') ? 'running' : 'stopped'} loading={loading}
                       details={[{ label: 'Online', value: services.filter(s => s.status === 'online').length }, { label: 'Stopped', value: services.filter(s => s.status === 'stopped').length }, { label: 'Errored', value: services.filter(s => s.status === 'errored').length }]}
                       actions={[{ label: 'Manage', onClick: () => setActiveTab('services') }]} />
-                    <ServiceCard name="C3 Backend" icon={Zap} status={health ? 'running' : 'error'} loading={loading}
+                    <ServiceCard name="AllMind Backend" icon={Zap} status={health ? 'running' : 'error'} loading={loading}
                       details={[{ label: 'Host', value: health?.host?.hostname || '—' }, { label: 'Platform', value: health?.host?.platform || '—' }, { label: 'Root', value: health?.config?.strapRoot?.split('\\').pop() || '—' }]} />
                     <ServiceCard name="Cloudflare Tunnel" icon={Activity} status={services.find(s => s.id === 'cloudflared')?.status || 'unknown'} loading={loading}
                       details={[{ label: 'Status', value: services.find(s => s.id === 'cloudflared')?.status || 'unknown' }]} />
                   </div>
+
+                  {/* TODO Panel */}
+                  <div className="mb-6">
+                    <TodoPanel repos={repos} api={api} title="TODO" />
+                  </div>
+
                   <div className="bg-gray-800 rounded-lg border border-gray-700 p-4">
                     <h2 className="font-semibold mb-3 flex items-center gap-2"><Database className="w-4 h-4" /> Chinvex Contexts ({contexts.length})</h2>
                     {loading ? <div className="flex items-center gap-2 text-gray-400"><Loader2 className="w-4 h-4" /> Loading...</div>
@@ -1421,6 +1827,7 @@
                   doSearch={doSearch}
                   handleRepoAction={handleRepoAction}
                   handleServiceAction={handleServiceAction}
+                  api={api}
                 />
               </Route>
             </Switch>

@@ -11,8 +11,8 @@ export const actionsRoutes = Router();
  */
 actionsRoutes.post('/open-claude', async (req, res, next) => {
   try {
-    const { repo, path: customPath } = req.body;
-    
+    const { repo, path: customPath, prompt } = req.body;
+
     let targetPath;
     if (customPath) {
       targetPath = customPath;
@@ -26,12 +26,18 @@ actionsRoutes.post('/open-claude', async (req, res, next) => {
       return res.status(404).json({ error: 'Path not found', path: targetPath });
     }
 
-    // Try to launch claude
-    // Claude Code CLI: `claude` or via wezterm for a new terminal
+    // Build claude command
+    let claudeCmd = 'claude --dangerously-skip-permissions';
+    if (prompt) {
+      // Escape quotes for PowerShell
+      const escapedPrompt = prompt.replace(/'/g, "''");
+      claudeCmd = `claude --dangerously-skip-permissions '${escapedPrompt}'`;
+    }
+
+    // Try Windows Terminal first, fallback to pwsh
     try {
-      // Option 1: Direct claude command (if installed globally)
-      const proc = spawn('claude', [], {
-        cwd: targetPath,
+      // Option 1: Windows Terminal
+      const proc = spawn('wt', ['-d', targetPath, 'pwsh', '-NoExit', '-Command', claudeCmd], {
         detached: true,
         stdio: 'ignore',
         shell: true,
@@ -41,13 +47,14 @@ actionsRoutes.post('/open-claude', async (req, res, next) => {
       res.json({
         action: 'open-claude',
         path: targetPath,
+        prompt: prompt || null,
         success: true,
-        method: 'claude CLI',
+        method: 'Windows Terminal + claude',
       });
     } catch (err) {
-      // Option 2: Open in wezterm with claude
+      // Fallback: Direct pwsh with new window
       try {
-        const proc = spawn('wezterm', ['start', '--cwd', targetPath, '--', 'claude'], {
+        const proc = spawn('pwsh', ['-NoExit', '-WorkingDirectory', targetPath, '-Command', claudeCmd], {
           detached: true,
           stdio: 'ignore',
           shell: true,
@@ -57,12 +64,13 @@ actionsRoutes.post('/open-claude', async (req, res, next) => {
         res.json({
           action: 'open-claude',
           path: targetPath,
+          prompt: prompt || null,
           success: true,
-          method: 'wezterm + claude',
+          method: 'pwsh + claude',
         });
       } catch (err2) {
-        res.status(500).json({ 
-          error: 'Could not launch Claude', 
+        res.status(500).json({
+          error: 'Could not launch Claude',
           details: [err.message, err2.message],
         });
       }

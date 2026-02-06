@@ -15,7 +15,6 @@ Maintain and improve AllMind control center for managing development infrastruct
 None
 
 ## Next Actions
-- [ ] Set CHINVEX_API_TOKEN in environment or ecosystem.config.cjs
 - [ ] Test PM2 services startup (allmind, chinvex-gateway, chinvex-tunnel, chinvex-sync)
 - [ ] Consider adding edit/quick actions to Heads Up panel
 

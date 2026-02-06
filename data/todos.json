@@ -1,0 +1,52 @@
+{
+  "todos": [
+    {
+      "id": "558ab091-0c2c-461a-adbc-8cfc1312467a",
+      "text": "make all errors api errors visible with red banner and \"investigate\" button that launches claude with a prompt to solve the issue.",
+      "repo": "allmind",
+      "priority": "medium",
+      "created_at": "2026-02-06T01:39:50.918Z",
+      "completed_at": null
+    },
+    {
+      "id": "c27886de-977d-4101-ac1c-96e001b0b2ee",
+      "text": "put registry.json behind api access only for protection",
+      "repo": "_strap",
+      "priority": "low",
+      "created_at": "2026-02-06T01:43:24.278Z",
+      "completed_at": null
+    },
+    {
+      "id": "80265ad4-7132-445a-b87e-349b17784a6b",
+      "text": "instant registry + chinvex backup / restore command",
+      "repo": "chinvex",
+      "priority": "high",
+      "created_at": "2026-02-06T01:43:47.527Z",
+      "completed_at": null
+    },
+    {
+      "id": "05d97ba4-2bda-416f-b886-94a280c5edaa",
+      "text": "**Update the Heads Up panel to incorporate TODO items into the UP NEXT section.**  The Heads Up panel currently reads from STATE.md data that's already fetched for the page. It should now also use the todos data that's already fetched for the TODO panel on the same page.  Frontend changes to the Heads Up \"UP NEXT\" section: - Show STATE.md next actions first (keep current behavior, label them subtly as \"from memory\" or with a document icon) - Below those, show the top 3 open todos for this repo sorted by priority, labeled subtly as \"tasks\" or with a checkbox icon - On the system/home page Heads Up (if it exists there), show top 3 todos across all repos - Cap total UP NEXT items at 5 max across both sources so it stays scannable - Each todo in Heads Up gets the launch-Claude icon button (same as the TODO panel) - Clicking a todo in Heads Up scrolls to and briefly highlights it in the TODO panel below  No new API endpoints needed — just consume the same data the TODO panel already fetches.  No changes to LAST DONE, CRITICAL, or HIGHEST ROI sections.",
+      "repo": "allmind",
+      "priority": "medium",
+      "created_at": "2026-02-06T02:07:57.046Z",
+      "completed_at": "2026-02-06T02:29:41.891Z"
+    },
+    {
+      "id": "16062401-2b33-4985-8b29-e748b020b9ed",
+      "text": "make allmind responsive for viewing on phone",
+      "repo": "allmind",
+      "priority": "medium",
+      "created_at": "2026-02-06T02:30:24.075Z",
+      "completed_at": null
+    },
+    {
+      "id": "b6e607e4-3ccc-4e7c-9e12-2f1913d10aae",
+      "text": "update UX library with thegridcn",
+      "repo": "allmind",
+      "priority": "medium",
+      "created_at": "2026-02-06T02:30:52.579Z",
+      "completed_at": null
+    }
+  ]
+}

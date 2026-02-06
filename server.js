@@ -8,6 +8,7 @@ import { reposRoutes } from './routes/repos.js';
 import { servicesRoutes } from './routes/services.js';
 import { actionsRoutes } from './routes/actions.js';
 import { chinvexRoutes } from './routes/chinvex.js';
+import { todosRoutes } from './routes/todos.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,6 +36,7 @@ app.use('/api/repos', reposRoutes);
 app.use('/api/services', servicesRoutes);
 app.use('/api/actions', actionsRoutes);
 app.use('/api/chinvex', chinvexRoutes);
+app.use('/api/todos', todosRoutes);
 
 // API index (for debugging)
 app.get('/api', (req, res) => {
