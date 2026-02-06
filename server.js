@@ -20,6 +20,27 @@ const PORT = process.env.ALLMIND_PORT || process.env.C3_PORT || 7780;
 app.use(cors());
 app.use(express.json());
 
+// Cache headers for PWA files (must be BEFORE static file serving)
+app.use((req, res, next) => {
+  // Service worker should not be cached by browser
+  if (req.path === '/service-worker.js') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Service-Worker-Allowed', '/');
+  }
+
+  // Manifest can be cached but should revalidate
+  if (req.path === '/manifest.json') {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  }
+
+  // Icons can be cached for longer
+  if (req.path.startsWith('/icons/')) {
+    res.setHeader('Cache-Control', 'public, max-age=604800'); // 7 days
+  }
+
+  next();
+});
+
 // Serve static files from public directory
 app.use(express.static(join(__dirname, 'public')));
 

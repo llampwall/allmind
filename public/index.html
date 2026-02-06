@@ -11,6 +11,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AllMind</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Universal control center for your development system. Monitor repos, services, and infrastructure.">
+  <meta name="theme-color" content="#ff3333">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AllMind">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- PWA Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -498,6 +513,93 @@
         </div>
       </div>
     );
+
+    // PWA Install Prompt Component
+    const PWAInstallPrompt = () => {
+      const [deferredPrompt, setDeferredPrompt] = useState(null);
+      const [showBanner, setShowBanner] = useState(false);
+
+      useEffect(() => {
+        // Check if already dismissed
+        const dismissed = localStorage.getItem('pwa-install-dismissed');
+        if (dismissed) return;
+
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+          return;
+        }
+
+        // Listen for install prompt
+        const handleBeforeInstallPrompt = (e) => {
+          e.preventDefault();
+          setDeferredPrompt(e);
+          setShowBanner(true);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        return () => {
+          window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        };
+      }, []);
+
+      const handleInstall = async () => {
+        if (!deferredPrompt) return;
+
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+
+        console.log(`PWA install ${outcome === 'accepted' ? 'accepted' : 'dismissed'}`);
+
+        setDeferredPrompt(null);
+        setShowBanner(false);
+      };
+
+      const handleDismiss = () => {
+        localStorage.setItem('pwa-install-dismissed', 'true');
+        setShowBanner(false);
+      };
+
+      if (!showBanner) return null;
+
+      return (
+        <div className="fixed bottom-4 right-4 z-50 max-w-sm">
+          <div className="bg-black/90 backdrop-blur-md border border-ares-500/30 rounded-lg p-4 shadow-glow-red">
+            {/* Animated border effect */}
+            <div className="absolute inset-0 border border-ares-500/50 rounded-lg animate-pulse pointer-events-none"></div>
+
+            <div className="relative">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-ares-900/50 border border-ares-500/30 rounded-lg flex items-center justify-center">
+                  <Rocket className="w-5 h-5 text-ares-500" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-sm mb-1">Install AllMind</h3>
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    Install as an app for quick access and offline UI
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handleInstall}
+                  className="flex-1 px-3 py-2 bg-ares-500/20 border border-ares-500/50 rounded-lg text-ares-500 text-xs font-semibold hover:bg-ares-500/30 hover:shadow-glow-red-sm transition-all duration-200"
+                >
+                  Install
+                </button>
+                <button
+                  onClick={handleDismiss}
+                  className="px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-gray-400 text-xs font-semibold hover:bg-gray-700/50 transition-all duration-200"
+                >
+                  Not now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
 
     // Sidebar Component
     const Sidebar = ({ activeTab, setActiveTab, repos, services, loading, lastRefresh, onRefresh, api, mobileMenuOpen, setMobileMenuOpen }) => {
@@ -2431,12 +2533,34 @@
                 />
               </Route>
             </Switch>
+            <PWAInstallPrompt />
           </div>
         </HashRouter>
       );
     }
 
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/service-worker.js')
+          .then((registration) => {
+            console.log('✓ Service Worker registered:', registration.scope);
+
+            // Check for updates periodically
+            setInterval(() => {
+              registration.update();
+            }, 60000); // Every minute
+          })
+          .catch((err) => {
+            console.error('Service Worker registration failed:', err);
+          });
+      });
+    }
   </script>
 </body>
 </html>
