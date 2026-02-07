@@ -32,7 +32,7 @@ None
 - Authentication (assumes trusted network only)
 
 ---
-Last memory update: 2026-02-06
-Commits covered through: be5a35da7e32bdc26c82444920eed5a460b1904f
+Last memory update: 2026-02-07
+Commits covered through: c5f30a09900a1ada805c2da537cf7008378e6d98
 
-<!-- chinvex:last-commit:be5a35da7e32bdc26c82444920eed5a460b1904f -->
+<!-- chinvex:last-commit:c5f30a09900a1ada805c2da537cf7008378e6d98 -->
