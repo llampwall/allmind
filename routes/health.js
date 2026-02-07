@@ -74,6 +74,8 @@ healthRoutes.get('/', async (req, res, next) => {
     });
 
     res.json({
+      ok: true,
+      uptime: process.uptime(),
       status: 'ok',
       host: {
         hostname: os.hostname(),
