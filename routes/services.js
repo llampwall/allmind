@@ -50,7 +50,7 @@ servicesRoutes.get('/', async (req, res, next) => {
         id: 'chinvex-api',
         name: 'Chinvex API',
         type: 'http',
-        status: 'running',
+        status: 'online',
         url: config.chinvexUrl,
         details: health,
       });
@@ -87,7 +87,30 @@ servicesRoutes.post('/:id/restart', async (req, res, next) => {
     }
 
     const pm2Id = id.replace('pm2-', '');
-    const result = await runPm2(['restart', pm2Id]);
+
+    // Special handling for restarting allmind itself
+    // We need to respond BEFORE restarting to avoid connection errors
+    if (id === 'pm2-0' || id === 'pm2-allmind') {
+      // Respond immediately with success
+      res.json({
+        id,
+        action: 'restart',
+        success: true,
+        message: 'AllMind restart initiated (self-restart)',
+      });
+
+      // Delay restart slightly to ensure response is sent
+      setTimeout(() => {
+        runPm2(['restart', pm2Id]).catch(err => {
+          console.error('Self-restart error:', err);
+        });
+      }, 500);
+
+      return;
+    }
+
+    // For other services, wait for result
+    const result = await runPm2(['restart', pm2Id], { timeout: 10000 });
 
     res.json({
       id,

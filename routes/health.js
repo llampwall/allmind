@@ -19,7 +19,7 @@ healthRoutes.get('/', async (req, res, next) => {
         id: 'chinvex',
         name: 'Chinvex API',
         type: 'chinvex',
-        status: 'running',
+        status: 'online',
         details: chinvexHealth,
       });
     } catch (err) {
@@ -40,7 +40,7 @@ healthRoutes.get('/', async (req, res, next) => {
         id: 'pm2',
         name: 'PM2 Daemon',
         type: 'pm2',
-        status: 'running',
+        status: 'online',
         details: { processCount: pm2Processes.length },
       });
     } catch (err) {

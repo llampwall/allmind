@@ -47,6 +47,32 @@
               700: '#990000',
               800: '#660000',
               900: '#330000',
+            },
+            'tron': {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            // Override default gray with blue-tinted slate for Tron aesthetic
+            'gray': {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#020617',
             }
           },
           boxShadow: {
@@ -65,21 +91,23 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    /* Ares Theme Variables */
+    /* Ares Theme Variables (LAB color space for accuracy) */
     :root {
+      --background: lab(.184322% .00216067 -.903434);
+      --card: lab(.884869% -.217319 -2.15163);
+      --foreground: lab(98.6514% -.00648698 -.0136472);
+      --muted: lab(15.8929% .00302338 -.0252034);
+      --muted-foreground: lab(61.9821% -.0134422 .0207957);
       --ares-primary: 0 84% 60%; /* HSL for #ff3333 red */
       --ares-primary-glow: rgba(255, 51, 51, 0.6);
-      --ares-bg-dark: #0a0a0a;
-      --ares-bg-panel: rgba(10, 10, 10, 0.85);
       --ares-border: rgba(255, 51, 51, 0.3);
-      --ares-text-primary: #ffffff;
-      --ares-text-secondary: rgba(255, 255, 255, 0.7);
+      --ares-text-accent: #60a5fa;
       --ares-success: #10b981;
       --ares-warning: #f59e0b;
       --ares-error: #ef4444;
     }
 
-    body { margin: 0; background: #05080a; font-family: 'Rajdhani', system-ui, sans-serif; }
+    body { margin: 0; background: var(--background); font-family: 'Rajdhani', system-ui, sans-serif; }
     .loading-screen { display: flex; align-items: center; justify-content: center; height: 100vh; color: #9ca3af; font-family: 'Rajdhani', system-ui; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .animate-spin { animation: spin 1s linear infinite; }
@@ -97,12 +125,25 @@
       text-shadow: 0 0 8px rgba(255, 51, 51, 0.4);
     }
 
+    /* Color-specific static glows */
     .tron-glow-sm {
       box-shadow: 0 0 4px rgba(255, 51, 51, 0.2);
     }
 
     .tron-glow-md {
       box-shadow: 0 0 8px rgba(255, 51, 51, 0.3);
+    }
+
+    .tron-glow-green-sm {
+      box-shadow: 0 0 4px rgba(16, 185, 129, 0.3);
+    }
+
+    .tron-glow-yellow-sm {
+      box-shadow: 0 0 4px rgba(245, 158, 11, 0.3);
+    }
+
+    .tron-glow-blue-sm {
+      box-shadow: 0 0 4px rgba(59, 130, 246, 0.3);
     }
 
     .scanline {
@@ -131,16 +172,49 @@
 
     .tron-backdrop {
       backdrop-filter: blur(8px);
-      background: rgba(5, 8, 10, 0.85);
+      background: var(--card);
     }
 
-    @keyframes pulse-glow {
+    /* Tron text colors */
+    .text-tron-primary { color: var(--foreground); }
+    .text-tron-secondary { color: var(--muted-foreground); }
+    .text-tron-accent { color: var(--ares-text-accent); }
+
+    /* Color-specific pulse animations */
+    @keyframes pulse-glow-red {
       0%, 100% { box-shadow: 0 0 4px rgba(255, 51, 51, 0.2); }
       50% { box-shadow: 0 0 8px rgba(255, 51, 51, 0.4); }
     }
 
+    @keyframes pulse-glow-green {
+      0%, 100% { box-shadow: 0 0 4px rgba(16, 185, 129, 0.2); }
+      50% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+    }
+
+    @keyframes pulse-glow-yellow {
+      0%, 100% { box-shadow: 0 0 4px rgba(245, 158, 11, 0.2); }
+      50% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
+    }
+
+    @keyframes pulse-glow-blue {
+      0%, 100% { box-shadow: 0 0 4px rgba(59, 130, 246, 0.2); }
+      50% { box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); }
+    }
+
     .tron-pulse {
-      animation: pulse-glow 2s ease-in-out infinite;
+      animation: pulse-glow-red 2s ease-in-out infinite !important;
+    }
+
+    .tron-pulse-green {
+      animation: pulse-glow-green 2s ease-in-out infinite !important;
+    }
+
+    .tron-pulse-yellow {
+      animation: pulse-glow-yellow 2s ease-in-out infinite !important;
+    }
+
+    .tron-pulse-blue {
+      animation: pulse-glow-blue 2s ease-in-out infinite !important;
     }
 
     .tron-grid-bg {
@@ -178,7 +252,7 @@
 
     /* Data Card */
     .data-card {
-      background: rgba(5, 8, 10, 0.6);
+      background: var(--card);
       border: 1px solid rgba(255, 51, 51, 0.3);
       backdrop-filter: blur(8px);
     }
@@ -245,6 +319,8 @@
       square: "M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z",
       list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
       rocket: "M4.5 16.5c-1.5 1.25-2 5-2 5s3.75-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2zM9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5",
+      plus: "M12 5v14M5 12h14",
+      x: "M18 6L6 18M6 6l12 12",
     };
 
     const Icon = ({ name, className = "w-4 h-4" }) => (
@@ -279,6 +355,108 @@
     const Square = ({ className }) => <Icon name="square" className={className} />;
     const ListIcon = ({ className }) => <Icon name="list" className={className} />;
     const Rocket = ({ className }) => <Icon name="rocket" className={className} />;
+    const Plus = ({ className }) => <Icon name="plus" className={className} />;
+    const X = ({ className }) => <Icon name="x" className={className} />;
+
+    // Button Component (TheGridCN style)
+    const Button = ({ children, variant = 'default', size = 'default', className = '', ...props }) => {
+      const baseClasses = 'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none';
+
+      const sizeClasses = {
+        default: 'h-9 px-4 py-2 text-sm',
+        sm: 'h-8 px-3 py-1.5 text-xs rounded',
+        lg: 'h-10 px-6 py-2.5 text-sm',
+        icon: 'h-9 w-9 p-0',
+      };
+
+      const variantClasses = {
+        default: 'bg-ares-500 text-white hover:bg-ares-500/90 border-2 border-ares-500 shadow-[0_0_12px_rgba(255,51,51,0.6),0_0_24px_rgba(255,51,51,0.3)] hover:shadow-[0_0_16px_rgba(255,51,51,0.8),0_0_32px_rgba(255,51,51,0.4)]',
+        ghost: 'hover:bg-white/10 hover:text-ares-400 text-gray-400 border border-transparent',
+        destructive: 'bg-red-600/80 text-white hover:bg-red-600/90 border-2 border-red-500 shadow-[0_0_12px_rgba(220,38,38,0.6),0_0_24px_rgba(220,38,38,0.3)]',
+        outline: 'border-2 border-ares-500/60 bg-black/40 hover:bg-ares-500/10 hover:border-ares-500 text-gray-200 hover:text-white shadow-[0_0_8px_rgba(255,51,51,0.4)] hover:shadow-[0_0_12px_rgba(255,51,51,0.6),0_0_24px_rgba(255,51,51,0.3)]',
+      };
+
+      return (
+        <button
+          className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
+          {...props}
+        >
+          {children}
+        </button>
+      );
+    };
+
+    // Combobox Component (searchable dropdown)
+    const Combobox = ({ value, onChange, options, placeholder = 'Select...', disabled, className = '' }) => {
+      const [isOpen, setIsOpen] = useState(false);
+      const [search, setSearch] = useState('');
+      const ref = useRef(null);
+
+      useEffect(() => {
+        const handleClickOutside = (e) => {
+          if (ref.current && !ref.current.contains(e.target)) {
+            setIsOpen(false);
+            setSearch('');
+          }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+      }, []);
+
+      const filteredOptions = options.filter(opt =>
+        opt.label.toLowerCase().includes(search.toLowerCase())
+      );
+
+      const selectedLabel = options.find(opt => opt.value === value)?.label || placeholder;
+
+      return (
+        <div ref={ref} className={`relative ${className}`}>
+          <button
+            type="button"
+            onClick={() => !disabled && setIsOpen(!isOpen)}
+            disabled={disabled}
+            className="h-9 w-full px-3 bg-black/30 border border-white/20 rounded-md text-sm text-left text-gray-200 hover:border-ares-500/50 focus:outline-none focus:border-ares-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between gap-2"
+          >
+            <span className="truncate flex-1">{selectedLabel}</span>
+            <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {isOpen && (
+            <div className="absolute z-50 w-full mt-1 bg-black/95 border border-ares-500/30 rounded-md shadow-lg max-h-60 overflow-hidden backdrop-blur-sm">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+                className="h-9 w-full px-3 bg-black/50 border-b border-white/10 text-sm text-gray-200 placeholder-gray-500 focus:outline-none"
+                autoFocus
+              />
+              <div className="overflow-y-auto max-h-48">
+                {filteredOptions.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-gray-500">No results</div>
+                ) : (
+                  filteredOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        onChange(opt.value);
+                        setIsOpen(false);
+                        setSearch('');
+                      }}
+                      className={`w-full px-3 py-2 text-sm text-left hover:bg-ares-500/20 transition-all cursor-pointer ${
+                        opt.value === value ? 'bg-ares-500/10 text-ares-400' : 'text-gray-200'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
 
     // Markdown Renderer Component
     const MarkdownRenderer = ({ content, className = "" }) => {
@@ -307,13 +485,13 @@
 
     const StatusBadge = ({ status }) => {
       const styles = {
-        ok: 'bg-green-500/10 text-green-400 border-green-500/50 tron-glow-sm',
-        running: 'bg-green-500/10 text-green-400 border-green-500/50 tron-pulse',
-        online: 'bg-ares-500/10 text-ares-400 border-ares-500/50 tron-glow-sm',
-        clean: 'bg-blue-500/10 text-blue-400 border-blue-500/50',
-        error: 'bg-red-500/10 text-red-400 border-red-500/50 tron-glow-sm',
-        errored: 'bg-red-500/10 text-red-400 border-red-500/50 tron-glow-sm',
-        warning: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/50',
+        ok: 'bg-green-500/10 text-green-400 border-green-500/50',
+        running: 'bg-green-500/10 text-green-400 border-green-500/50 tron-pulse-green',
+        online: 'bg-green-500/10 text-green-400 border-green-500/50 tron-pulse-green',
+        clean: 'bg-blue-500/10 text-blue-400 border-blue-500/50 tron-pulse-blue',
+        error: 'bg-red-500/10 text-red-400 border-red-500/50',
+        errored: 'bg-red-500/10 text-red-400 border-red-500/50',
+        warning: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/50 tron-pulse-yellow',
         unknown: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
         stopped: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
         stale: 'bg-orange-500/10 text-orange-400 border-orange-500/50',
@@ -444,9 +622,9 @@
                   )}
                 </div>
                 <div className="flex gap-2 pt-2">
-                  {repo.testCommand && <button onClick={() => onAction('test', repo)} className="text-xs px-3 py-1.5 bg-green-600 hover:bg-green-500 hover:border-green-400 transition-all duration-200 rounded text-white flex items-center gap-1"><Play className="w-3 h-3" /> Run Tests</button>}
-                  <button onClick={() => onAction('git-pull', repo)} className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 transition-all duration-200 rounded text-gray-300">Git Pull</button>
-                  {repo.tools?.memory && <button onClick={() => onAction('view-memory', repo)} className="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-500 transition-all duration-200 rounded text-white">View Memory</button>}
+                  {repo.testCommand && <Button onClick={() => onAction('test', repo)} size="sm" className="bg-green-600 hover:bg-green-600/90 border-2 border-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)]"><Play className="w-3 h-3" /> Run Tests</Button>}
+                  <Button onClick={() => onAction('git-pull', repo)} variant="outline" size="sm">Git Pull</Button>
+                  {repo.tools?.memory && <Button onClick={() => onAction('view-memory', repo)} size="sm" className="bg-purple-600 hover:bg-purple-600/90 border-2 border-purple-500 shadow-[0_0_12px_rgba(147,51,234,0.6)]">View Memory</Button>}
                 </div>
               </div>
             </div>
@@ -457,10 +635,10 @@
 
     const ServiceRow = ({ service, onAction, actionLoading }) => {
       const isPm2 = service.id?.startsWith('pm2-');
-      const isOnline = service.status === 'online' || service.status === 'running';
+      const isOnline = service.status === 'online';
       return (
         <div className="flex items-center gap-3 p-3 tron-backdrop rounded-lg tron-border hover:tron-border-heavy transition-all duration-200">
-          <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400 tron-pulse' : 'bg-gray-500'}`} />
+          <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400 tron-pulse-green' : 'bg-gray-500'}`} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2"><span className="font-medium text-white">{service.name}</span><StatusBadge status={service.status} /></div>
             <div className="text-xs text-gray-500 flex gap-3 mt-0.5">
@@ -677,7 +855,7 @@
             ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}>
           <div className="p-4 border-b border-white/10 cursor-pointer hover:bg-black/30 transition-colors" onClick={handleLogoClick}>
-            <div className="flex items-center gap-2"><Zap className="w-6 h-6 text-ares-400 tron-glow-text" /><span className="font-bold text-lg">ALLMIND</span></div>
+            <div className="flex items-center justify-center"><img src="/icons/enhanced_allmind3.png?v=3" alt="AllMind" className="h-16 w-auto" style={{filter: 'brightness(1.2) contrast(1.3)'}} /></div>
           </div>
           <nav className="flex-1 p-2 overflow-auto">
             <div className="mb-3">
@@ -925,9 +1103,9 @@
               <XCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
               <h2 className="text-xl font-semibold mb-2">Repository Not Found</h2>
               <p className="text-gray-400 mb-4">Could not find repository: {name}</p>
-              <button onClick={() => history.push('/')} className="px-4 py-2 bg-ares-600 hover:bg-ares-500 hover:border-ares-400 transition-all duration-200 rounded">
+              <Button onClick={() => history.push('/')} variant="default">
                 Back to Overview
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -1083,15 +1261,15 @@
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <button onClick={() => handleAction('open-claude')} className="px-4 py-2 bg-black/20 border border-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-ares-400 hover:text-ares-300 flex items-center gap-2 text-sm whitespace-nowrap">
+                <Button onClick={() => handleAction('open-claude')} variant="outline" className="justify-start">
                   <Zap className="w-4 h-4" /> Open Claude
-                </button>
-                <button onClick={() => handleAction('open-vscode')} className="px-4 py-2 bg-black/30hover:bg-black/50 rounded text-gray-300 flex items-center gap-2 text-sm whitespace-nowrap">
+                </Button>
+                <Button onClick={() => handleAction('open-vscode')} variant="ghost" className="justify-start">
                   <Code className="w-4 h-4" /> Open VS Code
-                </button>
-                <button onClick={() => handleAction('open-terminal')} className="px-4 py-2 bg-black/30hover:bg-black/50 rounded text-gray-300 flex items-center gap-2 text-sm whitespace-nowrap">
+                </Button>
+                <Button onClick={() => handleAction('open-terminal')} variant="ghost" className="justify-start">
                   <TerminalSquare className="w-4 h-4" /> Open Terminal
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1205,19 +1383,23 @@
 
               {/* Git Action Buttons */}
               <div className="flex gap-2 mb-4">
-                <button
+                <Button
                   onClick={() => handleAction('git-pull')}
-                  className="flex-1 px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 text-xs transition-all"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
                 >
                   Pull
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => handleAction('git-push')}
                   disabled={!repo.git?.ahead || repo.git.ahead === 0}
-                  className="flex-1 px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
                 >
                   Push
-                </button>
+                </Button>
               </div>
 
               {/* Recent Commits */}
@@ -1378,20 +1560,15 @@
                       </div>
 
                       {/* Critical */}
-                      <div className="border-b border-white/10 pb-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <AlertCircle className="w-4 h-4 text-red-400" />
-                          <h3 className="text-xs font-semibold text-gray-400 uppercase">Critical</h3>
-                        </div>
-                        {headsUpData.blockers ? (
-                          <div className="text-sm text-red-300 bg-red-500/10 p-2 rounded">{headsUpData.blockers}</div>
-                        ) : (
-                          <div className="text-sm text-green-400 flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4" />
-                            No blockers
+                      {headsUpData.blockers && (
+                        <div className="border-b border-white/10 pb-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <AlertCircle className="w-4 h-4 text-red-400" />
+                            <h3 className="text-xs font-semibold text-gray-400 uppercase">Critical</h3>
                           </div>
-                        )}
-                      </div>
+                          <div className="text-sm text-red-300 bg-red-500/10 p-2 rounded">{headsUpData.blockers}</div>
+                        </div>
+                      )}
 
                       {/* Highest ROI */}
                       <div className="border-b border-white/10 pb-3">
@@ -1578,7 +1755,7 @@
           <div className="flex items-start gap-3 py-2 border-b border-white/10/50 last:border-0 group hover:bg-gray-800/30 transition-colors px-2 -mx-2 rounded">
           <button onClick={handleToggle} className="flex-shrink-0 mt-0.5">
             {todo.completed_at ? (
-              <CheckSquare className="w-5 h-5 text-green-400 tron-glow-sm" />
+              <CheckSquare className="w-5 h-5 text-green-400 tron-glow-green-sm" />
             ) : (
               <Square className="w-5 h-5 text-gray-500 hover:text-ares-400 transition-colors" />
             )}
@@ -1642,6 +1819,7 @@
       const [repo, setRepo] = useState(preselectedRepo || null);
       const [priority, setPriority] = useState('medium');
       const [adding, setAdding] = useState(false);
+      const [showForm, setShowForm] = useState(false);
 
       const handleSubmit = async (e) => {
         e.preventDefault();
@@ -1655,6 +1833,7 @@
           });
           setText('');
           setPriority('medium');
+          setShowForm(false);
           onAdd();
         } catch (err) {
           console.error('Failed to add todo:', err);
@@ -1663,49 +1842,77 @@
         }
       };
 
+      const repoOptions = [
+        { value: '', label: 'Global' },
+        ...repos.map(r => ({ value: r.name, label: r.name }))
+      ];
+
       return (
-        <form onSubmit={handleSubmit} className="flex gap-2 mb-4 flex-wrap">
-          <input
-            type="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Add a task..."
-            className="flex-1 min-w-[200px] px-3 py-2 bg-black/30 border border-white/20 rounded text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-ares-500 focus:border-ares-500 transition-all"
-            disabled={adding}
-          />
-          {!hideRepoSelect && (
-            <select
-              value={repo || ''}
-              onChange={(e) => setRepo(e.target.value || null)}
-              className="px-3 py-2 bg-black/30 border border-white/20 rounded text-sm text-gray-200 focus:outline-none focus:border-ares-500 focus:border-ares-500 transition-all"
-              disabled={adding}
+        <div className="mb-4 pb-4 border-b border-white/10">
+          {!showForm ? (
+            <Button
+              type="button"
+              onClick={() => setShowForm(true)}
+              variant="ghost"
+              className="w-full text-left justify-start"
             >
-              <option value="">Global</option>
-              {repos.map((r) => (
-                <option key={r.name} value={r.name}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
+              <Plus className="w-4 h-4" /> New Task
+            </Button>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-2">
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Describe the task..."
+                rows={2}
+                className="w-full px-3 py-2 bg-black/30 border border-white/20 rounded text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-ares-500 transition-all resize-none overflow-y-auto"
+                disabled={adding}
+                autoFocus
+              />
+              <div className="flex gap-2 items-center">
+                {!hideRepoSelect && (
+                  <Combobox
+                    value={repo || ''}
+                    onChange={(val) => setRepo(val || null)}
+                    options={repoOptions}
+                    placeholder="Select context..."
+                    disabled={adding}
+                    className="flex-1 min-w-0"
+                  />
+                )}
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  className="h-9 w-9 px-2 bg-black/30 border border-white/20 rounded-md text-sm focus:outline-none focus:border-ares-500 transition-all appearance-none text-center cursor-pointer"
+                  disabled={adding}
+                  title={`Priority: ${priority}`}
+                >
+                  <option value="high">🔴</option>
+                  <option value="medium">🟡</option>
+                  <option value="low">🟢</option>
+                </select>
+                <Button
+                  type="submit"
+                  disabled={adding || !text.trim()}
+                  variant="default"
+                  size="icon"
+                  title="Add task"
+                >
+                  {adding ? <Loader2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  variant="ghost"
+                  size="icon"
+                  title="Cancel"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </form>
           )}
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="px-3 py-2 bg-black/30 border border-white/20 rounded text-sm text-gray-200 focus:outline-none focus:border-ares-500 focus:border-ares-500 transition-all"
-            disabled={adding}
-          >
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-          <button
-            type="submit"
-            disabled={adding || !text.trim()}
-            className="px-4 py-2 bg-black/20 border border-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-sm text-ares-400 hover:text-ares-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {adding ? 'Adding...' : 'Add'}
-          </button>
-        </form>
+        </div>
       );
     };
 
@@ -1799,7 +2006,7 @@
                 <div className="tron-backdrop rounded-lg tron-border-heavy max-w-2xl w-full max-h-[80vh] flex flex-col">
                   <div className="flex items-center justify-between p-4 border-b border-white/10/50">
                     <div className="flex items-center gap-2">
-                      {outputModal.success ? <CheckCircle className="w-5 h-5 text-green-400 tron-pulse" /> : <XCircle className="w-5 h-5 text-red-400 tron-glow-sm" />}
+                      {outputModal.success ? <CheckCircle className="w-5 h-5 text-green-400 tron-pulse-green" /> : <XCircle className="w-5 h-5 text-red-400 tron-glow-sm" />}
                       <span className="font-medium">{outputModal.title}</span>
                     </div>
                     <button onClick={() => setOutputModal(null)} className="text-gray-400 hover:text-ares-400 transition-colors"><XCircle className="w-5 h-5" /></button>
@@ -1834,8 +2041,8 @@
                               <span className="font-medium text-white">AllMind Backend</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-                              <StatusBadge status={health ? 'running' : 'error'} />
                               <span className="text-gray-400 text-xs">Host: {health?.host?.hostname || '—'}</span>
+                              <StatusBadge status={health ? 'online' : 'error'} />
                             </div>
                           </div>
 
@@ -1846,15 +2053,9 @@
                               <span className="font-medium text-gray-300">Chinvex API</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-                              <StatusBadge status={health?.services?.find(s => s.id === 'chinvex')?.status || 'unknown'} />
                               <span className="text-gray-400 text-xs whitespace-nowrap">Contexts: {contexts.length}</span>
                               <span className="text-gray-400 text-xs whitespace-nowrap">v{health?.services?.find(s => s.id === 'chinvex')?.details?.version || '—'}</span>
-                              <button
-                                onClick={() => setActiveTab('search')}
-                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 flex items-center gap-1 transition-all whitespace-nowrap"
-                              >
-                                <SearchIcon className="w-3 h-3" /> Search
-                              </button>
+                              <StatusBadge status={health?.services?.find(s => s.id === 'chinvex')?.status || 'unknown'} />
                             </div>
                           </div>
 
@@ -1865,11 +2066,11 @@
                               <span className="font-medium text-gray-300">Chinvex Gateway</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-gateway')?.status || 'unknown'} />
                               {(() => {
                                 const svc = services.find(s => s.name === 'chinvex-gateway');
                                 return svc?.uptime ? <span className="text-gray-400 text-xs whitespace-nowrap">Up: {formatUptime(svc.uptime)}</span> : null;
                               })()}
+                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-gateway')?.status || 'unknown'} />
                             </div>
                           </div>
 
@@ -1880,11 +2081,11 @@
                               <span className="font-medium text-gray-300">Cloudflare Tunnel</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-tunnel')?.status || 'unknown'} />
                               {(() => {
                                 const svc = services.find(s => s.name === 'chinvex-tunnel');
                                 return svc?.uptime ? <span className="text-gray-400 text-xs whitespace-nowrap">Up: {formatUptime(svc.uptime)}</span> : null;
                               })()}
+                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-tunnel')?.status || 'unknown'} />
                             </div>
                           </div>
 
@@ -1895,17 +2096,11 @@
                               <span className="font-medium text-gray-300">Chinvex Sync</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-sync')?.status || 'unknown'} />
                               {(() => {
                                 const svc = services.find(s => s.name === 'chinvex-sync');
                                 return svc?.uptime ? <span className="text-gray-400 text-xs whitespace-nowrap">Up: {formatUptime(svc.uptime)}</span> : null;
                               })()}
-                              <button
-                                onClick={() => setActiveTab('services')}
-                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 whitespace-nowrap"
-                              >
-                                Manage All
-                              </button>
+                              <StatusBadge status={services.find(svc => svc.name === 'chinvex-sync')?.status || 'unknown'} />
                             </div>
                           </div>
 
@@ -1922,12 +2117,13 @@
                               <span className="text-gray-400 text-xs whitespace-nowrap">{repos.length} total</span>
                               <span className="text-gray-400 text-xs whitespace-nowrap">{repos.filter(r => r.git?.dirty).length} dirty</span>
                               <span className="text-gray-400 text-xs whitespace-nowrap">{repos.filter(r => r.tools?.memory).length} with memory</span>
-                              <button
+                              <Button
                                 onClick={() => setActiveTab('repos')}
-                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 whitespace-nowrap"
+                                variant="outline"
+                                size="sm"
                               >
                                 View All
-                              </button>
+                              </Button>
                             </div>
                           </div>
 
@@ -1941,12 +2137,13 @@
                               <span className="text-gray-400 text-xs whitespace-nowrap">{shims.shims?.length || 0} shims</span>
                               <span className="text-gray-400 text-xs whitespace-nowrap">{shims.collisions?.length || 0} collisions</span>
                               <span className="text-gray-400 text-xs whitespace-nowrap">{shims.orphans?.length || 0} orphans</span>
-                              <button
+                              <Button
                                 onClick={() => { runDoctor(); setActiveTab('strap'); }}
-                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 flex items-center gap-1 whitespace-nowrap"
+                                variant="outline"
+                                size="sm"
                               >
                                 <Activity className="w-3 h-3" /> Doctor
-                              </button>
+                              </Button>
                             </div>
                           </div>
 
@@ -1958,12 +2155,13 @@
                             </div>
                             <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
                               <span className="text-gray-400 text-xs whitespace-nowrap">{contexts.length} contexts</span>
-                              <button
+                              <Button
                                 onClick={() => setActiveTab('contexts')}
-                                className="text-xs px-2 py-1 bg-black/20 border border-white/20 hover:bg-black/30 hover:border-white/30 rounded text-gray-300 whitespace-nowrap"
+                                variant="outline"
+                                size="sm"
                               >
                                 View All
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -2098,12 +2296,12 @@
                               </div>
 
                               {/* Critical */}
-                              <div className="border-b border-white/10 pb-3">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <AlertCircle className="w-4 h-4 text-red-400" />
-                                  <h3 className="text-xs font-semibold text-gray-400 uppercase">Critical</h3>
-                                </div>
-                                {reposWithBlockers.length > 0 ? (
+                              {reposWithBlockers.length > 0 && (
+                                <div className="border-b border-white/10 pb-3">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <AlertCircle className="w-4 h-4 text-red-400" />
+                                    <h3 className="text-xs font-semibold text-gray-400 uppercase">Critical</h3>
+                                  </div>
                                   <div className="space-y-2">
                                     {reposWithBlockers.map(({ repo, blocker }) => (
                                       <div key={repo} className="text-sm text-red-300 bg-red-500/10 p-2 rounded">
@@ -2117,15 +2315,10 @@
                                       </div>
                                     ))}
                                   </div>
-                                ) : (
-                                  <div className="text-sm text-green-400 flex items-center gap-2">
-                                    <CheckCircle className="w-4 h-4" />
-                                    No blockers
-                                  </div>
-                                )}
-                              </div>
+                                </div>
+                              )}
 
-                              {/* Highest ROI */}
+                              {/* Highest ROI - COMMENTED OUT FOR NOW
                               <div className="border-b border-white/10 pb-3">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Zap className="w-4 h-4 text-yellow-400" />
@@ -2180,6 +2373,7 @@
                                   <div className="text-sm text-gray-500">No tasks</div>
                                 )}
                               </div>
+                              */}
 
                               {/* Last Done */}
                               <div className="pb-3">
@@ -2262,9 +2456,9 @@
                         {contexts.map(ctx => <option key={ctx.name} value={ctx.name}>{ctx.name}</option>)}
                       </select>
                       <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && doSearch()} placeholder="Search query..." className="flex-1 bg-black/30 border border-white/20 rounded px-3 py-2 text-sm" />
-                      <button onClick={doSearch} disabled={!searchQuery.trim() || searching} className="px-4 py-2 bg-ares-600 hover:bg-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-sm disabled:opacity-50 flex items-center gap-2">
+                      <Button onClick={doSearch} disabled={!searchQuery.trim() || searching} variant="default">
                         {searching ? <Loader2 className="w-4 h-4" /> : <SearchIcon className="w-4 h-4" />} Search
-                      </button>
+                      </Button>
                     </div>
                     {searchResults && (
                       <div className="space-y-3">
@@ -2315,7 +2509,7 @@
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <h1 className="text-2xl font-bold tron-glow-text">Strap</h1>
-                    <button onClick={runDoctor} className="px-3 py-1.5 bg-ares-600 hover:bg-ares-500 hover:border-ares-400 transition-all duration-200 rounded text-sm flex items-center gap-2"><Activity className="w-4 h-4" /> Run Doctor</button>
+                    <Button onClick={runDoctor} variant="default"><Activity className="w-4 h-4" /> Run Doctor</Button>
                   </div>
                   {doctor && (
                     <div className="tron-backdrop rounded-lg tron-border p-4 mb-6">
