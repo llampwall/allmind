@@ -31,6 +31,14 @@
       "priority": "medium",
       "created_at": "2026-02-06T02:07:57.046Z",
       "completed_at": "2026-02-06T02:29:41.891Z"
+    },
+    {
+      "id": "602f81bd-0d59-4c08-9977-73a3e0916087",
+      "text": "change the title on the repo detail pages to the name of the repo instead of allmind",
+      "repo": "allmind",
+      "priority": "medium",
+      "created_at": "2026-02-06T07:10:11.769Z",
+      "completed_at": null
     }
   ]
 }

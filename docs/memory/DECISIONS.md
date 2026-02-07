@@ -14,8 +14,15 @@
 - Added system-wide SITREP panel aggregating commits, todos, and blockers across all repos
 - Created runPm2() wrapper for Windows .cmd execution compatibility
 - Redesigned overview with two-column layout (diagnostics/TODO/jobs left, SITREP right)
+- Applied TheGridCN Ares theme via CSS-only migration (preserves no-build architecture)
 
 ## 2026-02
+
+### 2026-02-06 — Applied TheGridCN Ares theme via CSS-only migration
+
+- **Why:** Improve visual aesthetics with Tron-inspired sci-fi control center theme while preserving no-build architecture
+- **Impact:** Added Ares red (#ff3333) color palette, glow effects (box-shadow), scanline backgrounds, backdrop blur, animated borders (tron-pulse), HUD-style frames on SITREP panels, and Tron grid backgrounds on modal overlays. Updated all UI components: badges, cards, buttons, modals, panels, navigation, forms with Ares theme. Configured Tailwind CDN with Ares color scale (50-900) and custom glow shadows. Theme applied via CSS variables and utility classes - no build step required.
+- **Evidence:** [Current commit]
 
 ### 2026-02-05 — Two-column overview layout with SITREP on right
 
