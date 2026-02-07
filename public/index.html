@@ -1734,7 +1734,11 @@
             method: 'POST',
             body: JSON.stringify({
               repo: targetRepo,
-              prompt: todo.text,
+              taskData: {
+                id: todo.id,
+                text: todo.text,
+                repo: targetRepo,
+              },
             }),
           });
 
@@ -1911,6 +1915,110 @@
                 </Button>
               </div>
             </form>
+          )}
+        </div>
+      );
+    };
+
+    const ActiveJobsPanel = ({ repos, api, onUpdate }) => {
+      const [jobs, setJobs] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [currentTime, setCurrentTime] = useState(Date.now());
+
+      const fetchJobs = useCallback(async () => {
+        setLoading(true);
+        try {
+          const data = await api('/api/todos');
+          // Filter for in-progress tasks only
+          const inProgress = (data.todos || []).filter(t => t.status === 'in-progress');
+          setJobs(inProgress);
+        } catch (err) {
+          console.error('Failed to fetch active jobs:', err);
+          setJobs([]);
+        } finally {
+          setLoading(false);
+        }
+      }, [api]);
+
+      // Calculate runtime duration
+      const getRuntime = (startTime) => {
+        const start = new Date(startTime);
+        const elapsed = Math.floor((currentTime - start) / 1000); // seconds
+
+        if (elapsed < 60) return `${elapsed}s`;
+        if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
+
+        const hours = Math.floor(elapsed / 3600);
+        const minutes = Math.floor((elapsed % 3600) / 60);
+        return `${hours}h ${minutes}m`;
+      };
+
+      useEffect(() => {
+        fetchJobs();
+        // Refresh every 10 seconds to catch status changes
+        const interval = setInterval(fetchJobs, 10000);
+        return () => clearInterval(interval);
+      }, [fetchJobs]);
+
+      useEffect(() => {
+        // Update time every second for runtime counter
+        const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      return (
+        <div className="tron-backdrop rounded-lg tron-border p-4">
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-green-400" /> ACTIVE JOBS
+            {jobs.length > 0 && (
+              <span className="ml-auto text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/30">
+                {jobs.length}
+              </span>
+            )}
+          </h2>
+          {loading ? (
+            <div className="flex items-center gap-2 text-gray-400 py-4">
+              <Loader2 className="w-4 h-4 text-green-400 animate-spin" /> Loading...
+            </div>
+          ) : jobs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+              <Activity className="w-12 h-12 mb-3 opacity-20" />
+              <p className="text-sm">No active jobs</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {jobs.map((job) => {
+                const startTime = job.updated_at || job.created_at;
+                const runtime = getRuntime(startTime);
+
+                return (
+                  <div key={job.id} className="flex items-start gap-3 p-3 bg-gray-800/30 rounded border border-green-500/20 hover:border-green-500/40 transition-colors">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <Activity className="w-4 h-4 text-green-400 animate-pulse" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        {job.repo && (
+                          <a
+                            href={`#/repo/${job.repo}`}
+                            className="text-xs px-2 py-0.5 bg-ares-500/10 text-ares-400 border border-ares-500/30 rounded hover:bg-ares-500/20 hover:tron-glow-sm transition-all"
+                          >
+                            {job.repo}
+                          </a>
+                        )}
+                        <span className="text-xs font-mono text-green-400 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/30">
+                          {runtime}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300 line-clamp-2">{job.text}</p>
+                      {job.notes && (
+                        <p className="text-xs text-gray-500 mt-1 italic line-clamp-1">{job.notes}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       );
@@ -2171,15 +2279,7 @@
                       <TodoPanel repos={repos} api={api} title="TODO" onUpdate={onRefresh} />
 
                       {/* Active Jobs Panel */}
-                      <div className="tron-backdrop rounded-lg tron-border p-4">
-                        <h2 className="font-semibold mb-4 flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-green-400" /> ACTIVE JOBS
-                        </h2>
-                        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                          <Activity className="w-12 h-12 mb-3 opacity-20" />
-                          <p className="text-sm">No active jobs</p>
-                        </div>
-                      </div>
+                      <ActiveJobsPanel repos={repos} api={api} onUpdate={onRefresh} />
                     </div>
 
                     {/* Right Column: SITREP */}

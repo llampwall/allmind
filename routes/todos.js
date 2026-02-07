@@ -13,7 +13,17 @@ export const todosRoutes = Router();
 async function readTodos() {
   try {
     const data = await readFile(TODOS_FILE, 'utf-8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+
+    // Backward compatibility: add missing fields to existing todos
+    parsed.todos = parsed.todos.map(todo => ({
+      ...todo,
+      status: todo.status || 'open',
+      notes: todo.notes !== undefined ? todo.notes : null,
+      updated_at: todo.updated_at || todo.created_at,
+    }));
+
+    return parsed;
   } catch (err) {
     // If file doesn't exist or is corrupted, return empty structure
     return { todos: [] };
@@ -65,13 +75,17 @@ todosRoutes.post('/', async (req, res, next) => {
     }
 
     const data = await readTodos();
+    const timestamp = new Date().toISOString();
     const newTodo = {
       id: crypto.randomUUID(),
       text: text.trim(),
       repo: repo || null,
       priority: priority || 'medium',
-      created_at: new Date().toISOString(),
+      status: 'open',
+      notes: null,
+      created_at: timestamp,
       completed_at: null,
+      updated_at: timestamp,
     };
 
     data.todos.push(newTodo);
@@ -106,6 +120,53 @@ todosRoutes.patch('/:id', async (req, res, next) => {
     if (updates.repo !== undefined) todo.repo = updates.repo || null;
     if (updates.priority !== undefined) todo.priority = updates.priority;
     if (updates.completed_at !== undefined) todo.completed_at = updates.completed_at;
+
+    await writeTodos(data);
+    res.json(todo);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/todos/:id - update task status
+todosRoutes.put('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status, notes } = req.body;
+
+    // Validate status is provided and valid
+    const validStatuses = ['open', 'in-progress', 'complete', 'failed'];
+    if (!status) {
+      return res.status(400).json({ error: 'status field is required' });
+    }
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+      });
+    }
+
+    const data = await readTodos();
+    const todo = data.todos.find(t => t.id === id);
+
+    if (!todo) {
+      return res.status(404).json({ error: 'Todo not found' });
+    }
+
+    // Update status
+    todo.status = status;
+
+    // Update notes: if provided, use it; if not provided, clear to null
+    todo.notes = notes !== undefined ? notes : null;
+
+    // Update completed_at based on status
+    if (status === 'complete') {
+      todo.completed_at = new Date().toISOString();
+    } else {
+      todo.completed_at = null;
+    }
+
+    // Update timestamp
+    todo.updated_at = new Date().toISOString();
 
     await writeTodos(data);
     res.json(todo);

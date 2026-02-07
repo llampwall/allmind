@@ -11,7 +11,7 @@ export const actionsRoutes = Router();
  */
 actionsRoutes.post('/open-claude', async (req, res, next) => {
   try {
-    const { repo, path: customPath, prompt } = req.body;
+    const { repo, path: customPath, prompt, taskData } = req.body;
 
     let targetPath;
     if (customPath) {
@@ -28,8 +28,15 @@ actionsRoutes.post('/open-claude', async (req, res, next) => {
 
     // Build claude command
     let claudeCmd = 'claude --dangerously-skip-permissions';
-    if (prompt) {
-      // Escape quotes for PowerShell
+
+    if (taskData) {
+      // For /execute-task skill: pass JSON with task metadata
+      const taskJson = JSON.stringify(taskData);
+      // PowerShell escaping: double all double-quotes
+      const escapedJson = taskJson.replace(/"/g, '""');
+      claudeCmd = `claude --dangerously-skip-permissions '/execute-task ${escapedJson}'`;
+    } else if (prompt) {
+      // Legacy prompt mode: escape single quotes for PowerShell
       const escapedPrompt = prompt.replace(/'/g, "''");
       claudeCmd = `claude --dangerously-skip-permissions '${escapedPrompt}'`;
     }
@@ -48,6 +55,7 @@ actionsRoutes.post('/open-claude', async (req, res, next) => {
         action: 'open-claude',
         path: targetPath,
         prompt: prompt || null,
+        taskData: taskData || null,
         success: true,
         method: 'Windows Terminal + claude',
       });
@@ -65,6 +73,7 @@ actionsRoutes.post('/open-claude', async (req, res, next) => {
           action: 'open-claude',
           path: targetPath,
           prompt: prompt || null,
+          taskData: taskData || null,
           success: true,
           method: 'pwsh + claude',
         });
