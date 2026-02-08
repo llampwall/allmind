@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Square,
 } from "lucide-react";
+import { GlowContainer } from "@/components/thegridcn/glow-container";
 import type { ApiService } from "@/lib/types";
 
 interface Pm2CardProps {
@@ -78,11 +79,14 @@ export function Pm2Card({ process: p }: Pm2CardProps) {
   const isStopped = p.status === "stopped";
 
   return (
-    <div
-      className={`flex flex-col rounded-sm border bg-card border-glow transition-colors ${
-        isStopped ? "border-border opacity-60" : `${cfg.border} bg-card`
+    <GlowContainer
+      intensity="md"
+      hover={true}
+      className={`flex flex-col p-0 transition-opacity ${
+        isStopped ? "opacity-60" : ""
       }`}
     >
+      <div className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
@@ -229,6 +233,7 @@ export function Pm2Card({ process: p }: Pm2CardProps) {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </GlowContainer>
   );
 }

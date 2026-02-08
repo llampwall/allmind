@@ -9,6 +9,7 @@ import {
   FileCode2,
   FlaskConical,
 } from "lucide-react";
+import { GlowContainer } from "@/components/thegridcn/glow-container";
 import type { ApiRepo } from "@/lib/types";
 
 interface OperationCardProps {
@@ -106,12 +107,17 @@ export function OperationCard({ repo }: OperationCardProps) {
   const shimCount = 0; // TODO: get from repo data
 
   return (
-    <Link
-      href={`/operations/${encodeURIComponent(repo.name)}`}
-      className={`group relative flex flex-col gap-3 rounded-sm border bg-card p-4 font-mono transition-all border-glow
-        ${isArchived ? "border-border opacity-60" : "border-border hover:border-primary/30 hover:glow-primary"}
-      `}
+    <GlowContainer
+      intensity="sm"
+      hover={true}
+      className="p-0"
     >
+      <Link
+        href={`/operations/${encodeURIComponent(repo.name)}`}
+        className={`group relative flex flex-col gap-3 rounded-sm p-4 font-mono transition-colors
+          ${isArchived ? "opacity-60" : "hover:bg-primary/5"}
+        `}
+      >
       {/* Row 1: name + status + embed depth */}
       <div className="flex items-start justify-between">
         <div>
@@ -208,6 +214,7 @@ export function OperationCard({ repo }: OperationCardProps) {
           ) : null,
         )}
       </div>
-    </Link>
+      </Link>
+    </GlowContainer>
   );
 }
