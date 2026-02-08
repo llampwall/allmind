@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider"
+import { GridBackground } from "@/components/grid-background"
 
 import "./globals.css";
 
@@ -54,6 +55,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
       </head>
       <body className="font-sans antialiased">
+        <GridBackground />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
