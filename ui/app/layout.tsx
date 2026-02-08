@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider"
+import { Grid3D } from "@/components/thegridcn/grid-3d"
 
 import "./globals.css";
 
@@ -54,7 +55,17 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {/* Fixed 3D Grid Background */}
+          <div className="fixed inset-0 z-0 opacity-35 pointer-events-none">
+            <Grid3D enableParticles={true} enableBeams={true} cameraAnimation={true} />
+          </div>
+
+          {/* Main Content */}
+          <div className="relative z-10">
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );
