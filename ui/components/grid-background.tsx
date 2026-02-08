@@ -9,7 +9,7 @@ const Grid3D = dynamic(
 
 export function GridBackground() {
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none opacity-30">
+    <div className="fixed inset-0 z-0 pointer-events-none opacity-50">
       <Grid3D enableParticles enableBeams cameraAnimation />
     </div>
   )

@@ -94,10 +94,10 @@ module.exports = {
     // AllMind UI - Next.js frontend for AllMind dashboard
     {
       name: 'allmind-ui',
-      script: 'cmd.exe',
-      args: '/c node_modules\\.bin\\next.cmd start',
+      script: 'node_modules/next/dist/bin/next',  
+      args: 'start',
       cwd: 'P:\\software\\allmind\\ui',
-      interpreter: 'none',
+      interpreter: 'node',
       exec_mode: 'fork',
       instances: 1,
       autorestart: true,

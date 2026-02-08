@@ -56,6 +56,7 @@ See `\docs\MEMORY_SYSTEM_HOW_IT_WORKS.md` and `docs/PROJECT_MEMORY_SPEC` for det
 - Registry is source of truth - filesystem is secondary enrichment
 - Dashboard code lives in public/index.html with inline React/Babel (no separate JSX)
 - Always use windowsHide: true in PM2 config to prevent terminal flashing
+- **PM2 on Windows**: For Node.js services, use `interpreter: 'node'` and point `script` directly to the JS file or binary (e.g., `node_modules/next/dist/bin/next`). DON'T use `cmd.exe /c` wrapper with `interpreter: 'none'` for Node.js - that creates visible terminal windows even with `windowsHide: true`. The `cmd.exe /c` pattern is ONLY for actual .cmd batch files that can't run otherwise.
 - Use shell:false for git commands to avoid Windows path/escaping issues
 - When opening a repo, check if brief shows "ACTION REQUIRED" - if so, offer to run `/update-memory`
 - Server binds to 0.0.0.0:7780 for tailscale/LAN access (not production-hardened)
