@@ -94,7 +94,7 @@ module.exports = {
     // AllMind UI - Next.js frontend for AllMind dashboard
     {
       name: 'allmind-ui',
-      script: 'node_modules/next/dist/bin/next',  
+      script: 'node_modules/next/dist/bin/next',
       args: 'start',
       cwd: 'P:\\software\\allmind\\ui',
       interpreter: 'node',
