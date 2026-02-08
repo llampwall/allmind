@@ -206,7 +206,7 @@ export function DiagnosticsPanel({ protocols, vectorStores = [] }: DiagnosticsPa
               </span>
             </div>
             {displayedStores.map((ctx) => {
-            const vcfg = vectorStatusConfig[ctx.status];
+            const vcfg = vectorStatusConfig[ctx.status || "synced"];
             return (
               <div
                 key={ctx.name}
@@ -230,8 +230,8 @@ export function DiagnosticsPanel({ protocols, vectorStores = [] }: DiagnosticsPa
                     {ctx.name}
                   </p>
                   <p className="font-mono text-[10px] text-muted-foreground">
-                    {ctx.chunk_count.toLocaleString()} chunks &middot;{" "}
-                    {ctx.file_count} files &middot; {timeAgo(ctx.updated_at)}
+                    {(ctx.chunk_count || 0).toLocaleString()} chunks &middot;{" "}
+                    {ctx.file_count || 0} files &middot; {timeAgo(ctx.updated_at)}
                   </p>
                 </div>
                 <span
