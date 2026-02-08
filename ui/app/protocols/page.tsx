@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { Server, Cpu, HardDrive, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { Server, Cpu, HardDrive, CheckCircle2, XCircle, AlertTriangle, Menu } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Pm2Card } from "@/components/protocols/pm2-card";
 import { HealthCheckCard } from "@/components/protocols/health-check-card";
@@ -24,6 +24,7 @@ export default function ProtocolsPage() {
   const { operations, refresh } = useAllmind();
   const [services, setServices] = useState<ApiService[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch services data
   useEffect(() => {
@@ -94,12 +95,20 @@ export default function ProtocolsPage() {
         quickAccessOps={quickAccessOps}
         onRefresh={handleRefresh}
         onReboot={handleReboot}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <main className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <header className="border-b border-border bg-card px-6 py-3">
-          <div className="flex items-center gap-3">
+        <header className="border-b border-border bg-card px-4 md:px-6 py-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden rounded-sm p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
             <Server className="h-4 w-4 text-primary" />
             <h1 className="font-mono text-sm font-semibold uppercase tracking-wider text-foreground">
               Protocols
@@ -111,7 +120,7 @@ export default function ProtocolsPage() {
         </header>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-3 md:p-6">
           <div className="flex flex-col gap-6">
             {/* PM2 Section */}
             <div className="flex flex-col gap-4">

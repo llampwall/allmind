@@ -4,6 +4,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useCallback, useEffect } from "react";
+import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { SearchBar } from "@/components/datacenter/search-bar";
 import { ResultsPanel } from "@/components/datacenter/results-panel";
@@ -22,6 +23,7 @@ export default function DataCenterPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [history, setHistory] = useState<SearchHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     async function loadContexts() {
@@ -85,26 +87,34 @@ export default function DataCenterPage() {
         quickAccessOps={operations}
         onRefresh={refresh}
         onReboot={() => {}}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <main className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between border-b border-border bg-card px-4 md:px-6 py-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden rounded-sm p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
             <h1 className="font-mono text-sm font-semibold uppercase tracking-wider text-foreground">
               Data Center
             </h1>
-            <span className="font-mono text-[10px] text-muted-foreground">
+            <span className="hidden sm:block font-mono text-[10px] text-muted-foreground">
               Knowledge Base Search
             </span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-2 md:gap-4">
+            <span className="hidden sm:block font-mono text-[10px] text-muted-foreground">
               SYS.CLOCK <SystemClock />
             </span>
             <span className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-400">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-              ONLINE
+              <span className="hidden sm:inline">ONLINE</span>
             </span>
           </div>
         </header>
@@ -112,7 +122,7 @@ export default function DataCenterPage() {
         {/* Content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Main Search Area */}
-          <div className="flex flex-1 flex-col gap-4 overflow-auto p-4">
+          <div className="flex flex-1 flex-col gap-4 overflow-auto p-3 md:p-4">
             {/* Search Bar */}
             {loading ? (
               <div className="flex items-center justify-center py-8">
