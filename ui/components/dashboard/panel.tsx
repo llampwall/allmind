@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { GlowContainer } from "@/components/thegridcn/glow-container";
 
 interface PanelProps {
   title: string;
@@ -16,8 +17,10 @@ export function Panel({
   className = "",
 }: PanelProps) {
   return (
-    <div
-      className={`flex flex-col rounded-sm border border-border bg-card border-glow ${className}`}
+    <GlowContainer
+      intensity="md"
+      hover={true}
+      className={`flex flex-col rounded-sm p-0 ${className}`}
       style={{ height: "fit-content" }}
     >
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -37,6 +40,6 @@ export function Panel({
         {headerAction}
       </div>
       <div className="overflow-auto p-4">{children}</div>
-    </div>
+    </GlowContainer>
   );
 }

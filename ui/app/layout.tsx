@@ -1,6 +1,7 @@
 import React from "react"
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/theme/theme-provider"
 
 import "./globals.css";
 
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#e63b19",
+  themeColor: "oklch(0.6 0.25 25)",
 };
 
 export default function RootLayout({
@@ -27,6 +28,22 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${_inter.variable} ${_jetbrains.variable}`}>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('project-ares-theme') || 'ares';
+                  const intensity = localStorage.getItem('project-ares-theme-intensity') || 'medium';
+                  document.documentElement.setAttribute('data-theme', theme);
+                  if (intensity !== 'none') {
+                    document.documentElement.setAttribute('data-tron-intensity', intensity);
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="application-name" content="AllMind" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -36,7 +53,9 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
       </head>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
