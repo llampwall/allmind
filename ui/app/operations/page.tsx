@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { FolderGit2, ChevronDown } from "lucide-react";
+import { FolderGit2, ChevronDown, Menu } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { OperationCard } from "@/components/operations/operation-card";
 import { fetchRepos, rebootSystem } from "@/lib/api";
@@ -25,6 +25,7 @@ export default function OperationsPage() {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>("name");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch full repo data
   useEffect(() => {
@@ -102,18 +103,27 @@ export default function OperationsPage() {
         quickAccessOps={quickAccessOps}
         onRefresh={handleRefresh}
         onReboot={handleReboot}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <main className="flex flex-1 flex-col overflow-hidden">
         {/* Header bar */}
-        <header className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between border-b border-border bg-card px-4 md:px-6 py-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Hamburger menu (mobile only) */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden rounded-sm p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
             <FolderGit2 className="h-4 w-4 text-primary" />
             <h1 className="font-mono text-sm font-semibold uppercase tracking-wider text-foreground">
               Operations
             </h1>
             <span className="rounded-sm bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-primary">
-              {repos.length} REPOS
+              {repos.length}
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -152,8 +162,8 @@ export default function OperationsPage() {
         </header>
 
         {/* Operations Grid */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="flex-1 overflow-auto p-3 md:p-6">
+          <div className="grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {sortedRepos.map((repo) => (
               <OperationCard key={repo.name} repo={repo} />
             ))}

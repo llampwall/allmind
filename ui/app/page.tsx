@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { SitrepPanel } from "@/components/dashboard/sitrep-panel";
 import { DiagnosticsPanel } from "@/components/dashboard/diagnostics-panel";
@@ -28,6 +29,8 @@ export default function MainframePage() {
     error,
     refresh,
   } = useAllmind();
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Derive quick access from operations (first 6, or you could filter by pinned)
   const quickAccessOps = operations.slice(0, 6);
@@ -108,12 +111,21 @@ export default function MainframePage() {
         quickAccessOps={quickAccessOps}
         onRefresh={handleRefresh}
         onReboot={handleReboot}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <main className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
+        <header className="flex items-center justify-between border-b border-border bg-card px-4 md:px-6 py-3">
           <div className="flex items-center gap-3">
+            {/* Hamburger menu (mobile only) */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden rounded-sm p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
             <h1 className="font-mono text-sm font-semibold uppercase tracking-wider text-foreground">
               Mainframe
             </h1>
@@ -121,26 +133,26 @@ export default function MainframePage() {
               LIVE
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             {error && (
-              <span className="font-mono text-[10px] text-destructive">
+              <span className="hidden sm:block font-mono text-[10px] text-destructive">
                 ⚠ {error}
               </span>
             )}
-            <span className="font-mono text-[10px] text-muted-foreground">
+            <span className="hidden sm:block font-mono text-[10px] text-muted-foreground">
               SYS.CLOCK <SystemClock />
             </span>
             <span className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-400">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-              NOMINAL
+              <span className="hidden sm:inline">NOMINAL</span>
             </span>
           </div>
         </header>
 
         {/* Dashboard Grid */}
-        <div className="flex-1 overflow-auto p-4">
-          <div className="flex gap-4">
-            <div className="flex w-1/2 flex-col gap-4">
+        <div className="flex-1 overflow-auto p-3 md:p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex w-full md:w-1/2 flex-col gap-4">
               <SitrepPanel
                 directives={directives}
                 completedOps={completedOps}
@@ -156,7 +168,7 @@ export default function MainframePage() {
                 operationName="all"
               />
             </div>
-            <div className="flex w-1/2 flex-col gap-4">
+            <div className="flex w-full md:w-1/2 flex-col gap-4">
               <DiagnosticsPanel protocols={protocols} vectorStores={vectorStores} />
             </div>
           </div>

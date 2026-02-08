@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Menu } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { StatusBar } from "@/components/operations/status-bar";
 import { OpSitrepPanel } from "@/components/operations/op-sitrep-panel";
@@ -28,6 +28,7 @@ export default function OperationIntelPage({
   const [repo, setRepo] = useState<ApiRepo | null>(null);
   const [services, setServices] = useState<ApiService[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch repo and services data
   useEffect(() => {
@@ -169,15 +170,17 @@ export default function OperationIntelPage({
         quickAccessOps={quickAccessOps}
         onRefresh={handleRefresh}
         onReboot={handleReboot}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <main className="flex flex-1 flex-col overflow-hidden">
-        <StatusBar repo={repo} services={services} />
+        <StatusBar repo={repo} services={services} onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Intel Grid */}
-        <div className="flex-1 overflow-auto p-4">
-          <div className="flex gap-4">
-            <div className="flex w-1/2 flex-col gap-4">
+        <div className="flex-1 overflow-auto p-3 md:p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex w-full md:w-1/2 flex-col gap-4">
               <OpSitrepPanel directives={repoDirectives} />
               <TaskOpsPanel
                 directives={repoDirectives}
@@ -190,7 +193,7 @@ export default function OperationIntelPage({
                 operationName={decodedName}
               />
             </div>
-            <div className="flex w-1/2 flex-col gap-4">
+            <div className="flex w-full md:w-1/2 flex-col gap-4">
               <SystemStatePanel repo={repo} services={services} />
             </div>
           </div>

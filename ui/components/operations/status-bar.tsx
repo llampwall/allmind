@@ -10,11 +10,13 @@ import {
   Code2,
   Bot,
   Terminal,
+  Menu,
 } from "lucide-react";
 import type { Repo } from "@/lib/types";
 
 interface StatusBarProps {
   repo: ApiRepo;
+  onMenuClick?: () => void;
 }
 
 const statusConfig: Record<
@@ -45,60 +47,76 @@ const actionItems = [
   { label: "Terminal", icon: Terminal },
 ];
 
-export function StatusBar({ repo }: StatusBarProps) {
+export function StatusBar({ repo, onMenuClick }: StatusBarProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const status = statusConfig[repo.status] ?? statusConfig.active;
 
   return (
-    <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3">
+    <div className="flex items-center gap-2 md:gap-3 border-b border-border bg-card px-3 md:px-4 py-3">
+      {/* Hamburger menu (mobile only) */}
+      <button
+        type="button"
+        onClick={onMenuClick}
+        className="md:hidden flex items-center justify-center rounded-sm p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
       {/* Back button */}
       <button
         type="button"
         onClick={() => router.push("/")}
-        className="flex items-center justify-center rounded-sm border border-border bg-transparent p-1.5 text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+        className="hidden md:flex items-center justify-center rounded-sm border border-border bg-transparent p-1.5 text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
         aria-label="Return to Mainframe"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
       </button>
 
       {/* Repo identity */}
-      <div className="mr-1">
-        <h1 className="font-mono text-sm font-semibold uppercase tracking-wider text-foreground">
+      <div className="mr-1 min-w-0 flex-shrink">
+        <h1 className="font-mono text-sm font-semibold uppercase tracking-wider text-foreground truncate">
           {repo.name}
         </h1>
-        <p className="font-mono text-[10px] text-muted-foreground">
+        <p className="font-mono text-[10px] text-muted-foreground truncate hidden md:block">
           {repo.path}
         </p>
       </div>
 
       {/* Status badge */}
-      <span className={`flex items-center gap-1.5 font-mono text-[10px] font-semibold ${status.textColor}`}>
+      <span className={`flex items-center gap-1.5 font-mono text-[10px] font-semibold ${status.textColor} flex-shrink-0`}>
         <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${status.dotColor}`} />
-        {status.label}
+        <span className="hidden sm:inline">{status.label}</span>
       </span>
 
-      <span className="h-4 w-px bg-border" />
+      <span className="hidden md:block h-4 w-px bg-border flex-shrink-0" />
 
-      {/* Tags */}
-      {repo.tags.map((tag) => (
-        <span
-          key={tag}
-          className="rounded-sm border border-border/50 bg-card px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground/70"
-        >
-          {tag}
-        </span>
-      ))}
+      {/* Tags - wrap on mobile, hidden on very small screens */}
+      <div className="hidden sm:flex flex-wrap gap-1.5 items-center">
+        {repo.tags.slice(0, 3).map((tag) => (
+          <span
+            key={tag}
+            className="rounded-sm border border-border/50 bg-card px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground/70 whitespace-nowrap"
+          >
+            {tag}
+          </span>
+        ))}
+        {repo.tags.length > 3 && (
+          <span className="font-mono text-[9px] text-muted-foreground/50">
+            +{repo.tags.length - 3}
+          </span>
+        )}
+      </div>
 
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Clock */}
-      <span className="font-mono text-[10px] text-muted-foreground">
+      {/* Clock - hidden on mobile */}
+      <span className="hidden lg:block font-mono text-[10px] text-muted-foreground flex-shrink-0">
         SYS.CLOCK <SystemClock />
       </span>
 
-      <span className="h-4 w-px bg-border" />
+      <span className="hidden lg:block h-4 w-px bg-border flex-shrink-0" />
 
       {/* Actions Dropdown */}
       <div className="relative">

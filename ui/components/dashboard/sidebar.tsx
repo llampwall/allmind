@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Server,
   AlertTriangle,
+  X,
 } from "lucide-react";
 import type { Operation } from "@/lib/types";
 
@@ -17,6 +18,8 @@ interface SidebarProps {
   quickAccessOps: Operation[];
   onRefresh: () => void;
   onReboot: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const statusColor: Record<string, string> = {
@@ -32,17 +35,35 @@ const navItems = [
   { label: "Protocols", icon: Server, href: "/protocols" },
 ];
 
-export function Sidebar({ quickAccessOps, onRefresh, onReboot }: SidebarProps) {
+export function Sidebar({ quickAccessOps, onRefresh, onReboot, isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
 
+  const handleLinkClick = () => {
+    onClose?.();
+  };
+
   return (
-    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-[hsl(220,22%,5%)] font-mono">
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50
+        flex h-screen w-60 shrink-0 flex-col border-r border-border bg-[hsl(220,22%,5%)] font-mono
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
       {/* ALLMIND Title */}
       <div className="flex items-center gap-3 border-b border-border px-5 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-primary/40 bg-primary/10">
           <span className="text-xs font-bold text-primary">A</span>
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-sm font-bold tracking-widest text-foreground">
             ALLMIND
           </h1>
@@ -50,6 +71,13 @@ export function Sidebar({ quickAccessOps, onRefresh, onReboot }: SidebarProps) {
             System Controller
           </p>
         </div>
+        {/* Close button (mobile only) */}
+        <button
+          onClick={onClose}
+          className="md:hidden rounded-sm p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -65,6 +93,7 @@ export function Sidebar({ quickAccessOps, onRefresh, onReboot }: SidebarProps) {
             <Link
               key={item.label}
               href={item.href}
+              onClick={handleLinkClick}
               className={`flex items-center gap-3 rounded-sm px-3 py-2 text-xs transition-colors ${
                 isActive
                   ? "border border-primary/20 bg-primary/10 text-primary"
@@ -92,6 +121,7 @@ export function Sidebar({ quickAccessOps, onRefresh, onReboot }: SidebarProps) {
             <Link
               key={op.id}
               href={`/operations/${encodeURIComponent(op.name)}`}
+              onClick={handleLinkClick}
               className={`flex items-center gap-3 rounded-sm px-3 py-2 text-xs transition-colors ${
                 isActive
                   ? "border border-primary/20 bg-primary/10 text-primary"
@@ -131,5 +161,6 @@ export function Sidebar({ quickAccessOps, onRefresh, onReboot }: SidebarProps) {
         </button>
       </div>
     </aside>
+    </>
   );
 }

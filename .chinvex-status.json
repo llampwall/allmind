@@ -1,8 +1,8 @@
 {
   "status": "error",
   "context": "allmind",
-  "updated_at": "2026-02-08T08:17:54.654866+00:00",
-  "finished_at": "2026-02-08T08:17:54.654870+00:00",
-  "started_at": "2026-02-08T08:17:52.589465+00:00",
+  "updated_at": "2026-02-08T08:28:50.534875+00:00",
+  "finished_at": "2026-02-08T08:28:50.534878+00:00",
+  "started_at": "2026-02-08T08:28:50.528724+00:00",
   "error": "[Errno 13] Permission denied: 'P:\\\\software\\\\allmind\\\\ui\\\\.next'"
 }
