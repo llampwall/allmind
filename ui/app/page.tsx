@@ -23,6 +23,7 @@ export default function MainframePage() {
     operations,
     activeAgents,
     completedOps,
+    vectorStores,
     loading,
     error,
     refresh,
@@ -156,7 +157,7 @@ export default function MainframePage() {
               />
             </div>
             <div className="flex w-1/2 flex-col gap-4">
-              <DiagnosticsPanel protocols={protocols} />
+              <DiagnosticsPanel protocols={protocols} vectorStores={vectorStores} />
             </div>
           </div>
         </div>

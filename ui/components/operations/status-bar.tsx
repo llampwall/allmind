@@ -84,7 +84,7 @@ export function StatusBar({ repo }: StatusBarProps) {
       {repo.tags.map((tag) => (
         <span
           key={tag}
-          className="rounded-sm bg-secondary px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground"
+          className="rounded-sm border border-border/50 bg-card px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground/70"
         >
           {tag}
         </span>

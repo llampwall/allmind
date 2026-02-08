@@ -7,6 +7,7 @@ import {
   fetchOperations,
   fetchActiveAgents,
   fetchCompletedOps,
+  fetchChinvexContexts,
 } from "@/lib/api";
 import type {
   Directive,
@@ -14,6 +15,7 @@ import type {
   Operation,
   ActiveAgent,
   CompletedOp,
+  ChinvexContext,
 } from "@/lib/types";
 
 interface AllmindState {
@@ -22,6 +24,7 @@ interface AllmindState {
   operations: Operation[];
   activeAgents: ActiveAgent[];
   completedOps: CompletedOp[];
+  vectorStores: ChinvexContext[];
   loading: boolean;
   error: string | null;
   lastRefresh: Date | null;
@@ -37,6 +40,7 @@ export function useAllmind() {
     operations: [],
     activeAgents: [],
     completedOps: [],
+    vectorStores: [],
     loading: true,
     error: null,
     lastRefresh: null,
@@ -46,13 +50,14 @@ export function useAllmind() {
 
   const refresh = useCallback(async () => {
     try {
-      const [directives, protocols, operations, activeAgents, completedOps] =
+      const [directives, protocols, operations, activeAgents, completedOps, vectorStores] =
         await Promise.all([
           fetchDirectives(),
           fetchProtocols(),
           fetchOperations(),
           fetchActiveAgents(),
           fetchCompletedOps(),
+          fetchChinvexContexts().catch(() => []), // Gracefully handle if Chinvex is unavailable
         ]);
 
       if (!mountedRef.current) return;
@@ -63,6 +68,7 @@ export function useAllmind() {
         operations,
         activeAgents,
         completedOps,
+        vectorStores,
         loading: false,
         error: null,
         lastRefresh: new Date(),
