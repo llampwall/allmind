@@ -44,6 +44,18 @@ dist/
 build/
 out/
 
+# Next.js
+ui/.next/
+ui/out/
+ui/.env*.local
+ui/public/sw.js
+ui/public/workbox-*.js
+ui/public/worker-*.js
+ui/public/sw.js.map
+ui/public/workbox-*.js.map
+ui/public/worker-*.js.map
+ui/public/fallback-*.js
+
 # Temporary files
 tmp/
 temp/

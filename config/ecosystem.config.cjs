@@ -90,5 +90,28 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       windowsHide: true,
     },
+
+    // AllMind UI - Next.js frontend for AllMind dashboard
+    {
+      name: 'allmind-ui',
+      script: 'cmd.exe',
+      args: '/c node_modules\\.bin\\next.cmd start',
+      cwd: 'P:\\software\\allmind\\ui',
+      interpreter: 'none',
+      exec_mode: 'fork',
+      instances: 1,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: 5000,
+      restart_delay: 2000,
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3000,
+      },
+      error_file: 'P:\\software\\allmind\\logs\\ui-error.log',
+      out_file: 'P:\\software\\allmind\\logs\\ui-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      windowsHide: true,
+    },
   ],
 };

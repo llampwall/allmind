@@ -1,0 +1,62 @@
+{
+  "name": "AllMind - Universal Control Center",
+  "short_name": "AllMind",
+  "description": "Universal control center for your development system. Monitor repos, services, and infrastructure.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05080a",
+  "theme_color": "#ff3333",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Overview",
+      "short_name": "Overview",
+      "description": "View system overview",
+      "url": "/",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Repositories",
+      "short_name": "Repos",
+      "description": "Browse repositories",
+      "url": "/#/repos",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Services",
+      "short_name": "Services",
+      "description": "Monitor PM2 services",
+      "url": "/#/services",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["development", "productivity", "utilities"],
+  "scope": "/",
+  "prefer_related_applications": false
+}
