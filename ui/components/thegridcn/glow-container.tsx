@@ -27,9 +27,9 @@ export function GlowContainer({
     <div
       className={cn(
         "rounded-lg border border-border bg-card p-4 transition-all duration-300",
-        hover && "hover:glow-border",
+        glowClass,
+        hover && "hover:glow-lg",
         pulse && "glow-pulse",
-        !hover && !pulse && glowClass,
         className
       )}
       {...props}
