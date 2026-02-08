@@ -271,12 +271,12 @@ export function Grid3D({
   const color = themeColors[theme] || themeColors.tron
 
   return (
-    <div className={className}>
+    <div className={className} style={{ width: '100%', height: '100%' }}>
       <Canvas
         camera={{ position: [0, 5, 10], fov: 60 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         dpr={[1, 2]} // Limit DPR to max 2 for performance
-        style={{ background: "transparent", pointerEvents: "none" }}
+        style={{ background: "transparent", pointerEvents: "none", width: '100%', height: '100%' }}
       >
         <fog attach="fog" args={["#000", 10, 50]} />
 

@@ -57,12 +57,12 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           {/* Fixed 3D Grid Background */}
-          <div className="fixed inset-0 z-0 opacity-35 pointer-events-none">
+          <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0, opacity: 0.4, width: '100vw', height: '100vh' }}>
             <Grid3D enableParticles={true} enableBeams={true} cameraAnimation={true} />
           </div>
 
           {/* Main Content */}
-          <div className="relative z-10">
+          <div className="relative" style={{ zIndex: 10 }}>
             {children}
           </div>
         </ThemeProvider>
