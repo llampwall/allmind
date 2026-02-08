@@ -6,7 +6,10 @@
       "repo": "allmind",
       "priority": "medium",
       "created_at": "2026-02-06T01:39:50.918Z",
-      "completed_at": null
+      "completed_at": null,
+      "status": "open",
+      "notes": null,
+      "updated_at": "2026-02-06T01:39:50.918Z"
     },
     {
       "id": "c27886de-977d-4101-ac1c-96e001b0b2ee",
@@ -14,7 +17,10 @@
       "repo": "_strap",
       "priority": "low",
       "created_at": "2026-02-06T01:43:24.278Z",
-      "completed_at": null
+      "completed_at": null,
+      "status": "open",
+      "notes": null,
+      "updated_at": "2026-02-07T14:16:02.438Z"
     },
     {
       "id": "80265ad4-7132-445a-b87e-349b17784a6b",
@@ -22,7 +28,10 @@
       "repo": "chinvex",
       "priority": "high",
       "created_at": "2026-02-06T01:43:47.527Z",
-      "completed_at": null
+      "completed_at": null,
+      "status": "open",
+      "notes": null,
+      "updated_at": "2026-02-06T01:43:47.527Z"
     },
     {
       "id": "05d97ba4-2bda-416f-b886-94a280c5edaa",
@@ -30,15 +39,43 @@
       "repo": "allmind",
       "priority": "medium",
       "created_at": "2026-02-06T02:07:57.046Z",
-      "completed_at": "2026-02-06T02:29:41.891Z"
+      "completed_at": "2026-02-06T02:29:41.891Z",
+      "status": "open",
+      "notes": null,
+      "updated_at": "2026-02-06T02:07:57.046Z"
     },
     {
-      "id": "602f81bd-0d59-4c08-9977-73a3e0916087",
-      "text": "change the title on the repo detail pages to the name of the repo instead of allmind",
+      "id": "6557a1a4-c6a4-4b0a-83b5-c16c02133065",
+      "text": "add a /api/health endpoint that returns {ok: true, uptime: process.uptime()}",
+      "repo": "allmind",
+      "priority": "high",
+      "status": "complete",
+      "notes": null,
+      "created_at": "2026-02-07T14:22:47.221Z",
+      "completed_at": "2026-02-07T14:25:36.333Z",
+      "updated_at": "2026-02-07T14:25:36.333Z"
+    },
+    {
+      "id": "5a83227c-affd-4b26-b054-140b2b0d4b97",
+      "text": "Apply the GridCN Tron Ares theme to this Next.js dashboard. The GridCN component library is cloned at P:\\software\\thegridcn-ui — read its source to understand component APIs, props, and variants before making changes. Use the Ares theme (red/crimson) at medium intensity throughout.  IMPORTANT: Read the actual component source files in P:\\software\\thegridcn-ui before using any component. Do not guess at props or APIs. The library has two groups: custom GridCN components (30) and themed shadcn components (54). Install using: pnpm dlx shadcn@latest add @thegridcn/<component-name> @thegridcn/theme-ares @thegridcn/intensity-medium  Here is how GridCN components should map to dashboard elements:  LAYOUT & CONTAINERS: - Grid 3D → subtle background behind the entire app (low opacity, behind all content panels) - HUD Frame → wrap each major panel (SITREP, System State, Task Ops, Diagnostics, etc.) — replaces the current plain bordered cards - HUD Corner Frame → accent corners on the page header area and key panels - Glow Container → wrap highlighted/active elements like in-progress agent cards, critical blockers  METRICS & DATA: - Stat → all individual metric displays: files indexed count, ahead/behind counts, PID, uptime, memory, CPU, restart counts, shim counts. Replace the current plain text metrics with Stat components - Data Card → structured data sections: Vector Store info block, Build Status block, context info cards in Data Center - Status Bar → the top bar on Operation Intel page (path + badges + tags)  ALERTS & NOTIFICATIONS: - Alert Banner → critical blockers in SITREP panels, error states - Anomaly Banner → warning states (STALE vector store, high restart count, DIRTY git status)  THEMED SHADCN REPLACEMENTS: - Badge → all status badges: ACTIVE/STABLE/ARCHIVED, FULL/LIGHT, CLEAN/DIRTY, IDLE/EMBEDDING/STALE, ONLINE/STOPPED/ERRORED. Use variant prop for color coding - Progress → CPU and memory bars on Protocols page - Button → all action buttons (Run Tests, Generate Shim, Commit, Push, Pull, Restart, Stop) - Card → operation cards on Operations page, protocol cards on Protocols page - Table → commit lists, search results in Data Center, shim lists - Tabs → if needed for panel sub-sections - Select → context dropdown in Data Center, sort dropdown on Operations - Checkbox → directive checkboxes in Task Ops  PAGES TO UPDATE (in priority order): 1. Root layout — add Grid 3D background, apply global Ares theme/fonts 2. Mainframe (home) — HUD Frame all panels, Stat for metrics, Alert Banner for blockers 3. Operation Intel (repo detail) — Status Bar header, HUD Frame panels, Stat for git/vector metrics, Glow Container for active agents 4. Operations (repo list) — Card for repo cards, Badge for all status pills 5. Protocols (services) — Stat for PID/uptime/memory/CPU, Progress for usage bars, Badge for status 6. Data Center (search) — Data Card for context index cards, Table for results  SKIP these components (not relevant for a dev dashboard): God Avatar, Tunnel, Video Player, Video Progress, Radar, Countdown, Derez Timer, Speed Indicator, Regen Indicator, Timer, Reticle  DO NOT change any data fetching logic, API calls, field names, or component structure. Only replace visual elements with GridCN equivalents. If a GridCN component doesn't fit cleanly, keep the existing element and just apply Ares CSS variables/colors.",
       "repo": "allmind",
       "priority": "medium",
-      "created_at": "2026-02-06T07:10:11.769Z",
-      "completed_at": null
+      "status": "open",
+      "notes": null,
+      "created_at": "2026-02-08T05:02:44.057Z",
+      "completed_at": null,
+      "updated_at": "2026-02-08T05:02:44.057Z"
+    },
+    {
+      "id": "41c55935-ce7f-440b-a549-cc7a984c8092",
+      "text": "tell me a joke",
+      "repo": "allmind",
+      "priority": "medium",
+      "status": "complete",
+      "notes": "Delivered programming joke as requested. Note: This was not a software engineering task.",
+      "created_at": "2026-02-08T05:07:31.622Z",
+      "completed_at": "2026-02-08T05:08:05.543Z",
+      "updated_at": "2026-02-08T05:08:05.543Z"
     }
   ]
 }
